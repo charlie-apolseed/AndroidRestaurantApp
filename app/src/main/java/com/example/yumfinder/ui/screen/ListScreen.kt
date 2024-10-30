@@ -178,7 +178,7 @@ fun AddRestaurantDialog (
                         }
                     }
                 ) {
-                    Text(text = "Add Restaurant")
+                    Text(text = "Add Restaurants")
                 }
             }
 
