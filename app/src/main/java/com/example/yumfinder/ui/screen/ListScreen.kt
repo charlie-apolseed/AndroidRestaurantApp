@@ -1,11 +1,14 @@
 package com.example.yumfinder.ui.screen
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
@@ -32,6 +35,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -63,9 +67,29 @@ fun ListScreen (modifier: Modifier = Modifier, viewModel: ListModel = ListModel(
                 }
             }
         )
-    }) {
-            innerPadding ->
-        Text(text = "Yumber One", modifier = Modifier.padding(innerPadding))
+    }) {innerPadding ->
+        Column(modifier = modifier.padding(innerPadding)) {
+            if (visitedRestaurants.isEmpty()) {
+                Card (
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    ), shape = RoundedCornerShape(20.dp), elevation = CardDefaults.cardElevation(
+                        defaultElevation = 10.dp
+                    ), modifier = Modifier
+                        .padding(5.dp)
+                        .fillMaxWidth()
+                ) {
+                    Text(text = "No restaurants have been visited yet.", modifier = Modifier.padding(20.dp))
+                }
+            } else {
+                LazyColumn {
+                    items(visitedRestaurants.size) { index ->
+                        RestaurantCard(restaurant = visitedRestaurants[index])
+                    }
+                }
+            }
+        }
+
 
         if (showAddDialog) {
             AddRestaurantDialog(viewModel,
@@ -78,9 +102,14 @@ fun ListScreen (modifier: Modifier = Modifier, viewModel: ListModel = ListModel(
 
 @Composable
 fun RestaurantCard (restaurant: Restaurant) {
+    var backgroundColor = MaterialTheme.colorScheme.surfaceVariant
+    if (restaurant.rating.toInt() >= 9) {
+        backgroundColor = MaterialTheme.colorScheme.surfaceBright
+    }
+
     Card (
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            containerColor = backgroundColor,
         ), shape = RoundedCornerShape(20.dp), elevation = CardDefaults.cardElevation(
             defaultElevation = 10.dp
         ), modifier = Modifier
@@ -92,23 +121,25 @@ fun RestaurantCard (restaurant: Restaurant) {
         Column (modifier = Modifier
             .padding(20.dp)
             .animateContentSize()) {
-            Row (verticalAlignment = Alignment.CenterVertically ) {
+            Row (verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth() ) {
                 Column {
-                    Text(text = restaurant.name, style = MaterialTheme.typography.headlineMedium)
+                    Text(text = restaurant.name, style = MaterialTheme.typography.headlineMedium, modifier = Modifier.widthIn(max = 300.dp), overflow = TextOverflow.Ellipsis, maxLines = 1)
                     Text(text = restaurant.location, style = MaterialTheme.typography.bodyMedium)
                 }
-                Text(text = restaurant.rating, style = MaterialTheme.typography.headlineMedium)
+                Row {
+                    Text(text = restaurant.rating, style = MaterialTheme.typography.headlineMedium)
 
-                IconButton(onClick = { expanded = !expanded }) {
-                    Icon(
-                        imageVector = if (expanded) Icons.Filled.KeyboardArrowUp
-                        else Icons.Filled.KeyboardArrowDown,
-                        contentDescription = if (expanded) {
-                            "Less"
-                        } else {
-                            "More"
-                        }
-                    )
+                    IconButton(onClick = { expanded = !expanded }) {
+                        Icon(
+                            imageVector = if (expanded) Icons.Filled.KeyboardArrowUp
+                            else Icons.Filled.KeyboardArrowDown,
+                            contentDescription = if (expanded) {
+                                "Less"
+                            } else {
+                                "More"
+                            }
+                        )
+                    }
                 }
             }
             if (expanded) {
@@ -178,7 +209,7 @@ fun AddRestaurantDialog (
                         }
                     }
                 ) {
-                    Text(text = "Add Restaurants")
+                    Text(text = "Add Restaurant")
                 }
             }
 
