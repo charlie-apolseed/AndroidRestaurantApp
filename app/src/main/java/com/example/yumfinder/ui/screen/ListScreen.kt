@@ -79,7 +79,7 @@ fun ListScreen (modifier: Modifier = Modifier, viewModel: ListModel = ListModel(
                         .padding(5.dp)
                         .fillMaxWidth()
                 ) {
-                    Text(text = "No restaurants have been visited yet.", modifier = Modifier.padding(20.dp))
+                    Text(text = "No restaurants have been visited yet", modifier = Modifier.padding(20.dp))
                 }
             } else {
                 LazyColumn {
