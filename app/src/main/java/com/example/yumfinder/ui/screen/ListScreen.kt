@@ -2,13 +2,16 @@ package com.example.yumfinder.ui.screen
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -22,6 +25,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -109,16 +113,20 @@ fun ListScreen(
             )
         }
     ) { innerPadding ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
+                .padding(innerPadding),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Main Content
             Column(
                 modifier = Modifier
-                    .fillMaxHeight(0.8f)
-                    .align(Alignment.TopCenter)
+                    .fillMaxHeight(0.9f)
+                    .fillMaxWidth(.9f)
+                    .background(MaterialTheme.colorScheme.primary),
+                verticalArrangement = Arrangement.Top,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 if (visitedRestaurants.isEmpty()) {
                     Card(
@@ -130,6 +138,7 @@ fun ListScreen(
                         modifier = Modifier
                             .padding(5.dp)
                             .fillMaxWidth()
+                            .fillMaxWidth(.9f)
                     ) {
                         Text(
                             text = "No restaurants have been visited yet",
@@ -137,34 +146,39 @@ fun ListScreen(
                         )
                     }
                 } else {
-                    LazyColumn {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .background(MaterialTheme.colorScheme.error)
+                    ) {
                         items(visitedRestaurants) { visitedRestaurant ->
                             RestaurantCard(restaurant = visitedRestaurant)
                         }
                     }
                 }
             }
-
-            // Bottom Icon
-            IconButton(
-                onClick = { viewModel.toggleAddDialog() },
-                colors = IconButtonColors(
-                    containerColor = MaterialTheme.colorScheme.onPrimary,
-                    contentColor = MaterialTheme.colorScheme.primary,
-                    disabledContainerColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                    disabledContentColor = MaterialTheme.colorScheme.secondaryContainer
-                ),
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 16.dp)
-                    .size(60.dp)// Add padding for spacing from the bottom
+            Row(
+                modifier = Modifier.fillMaxSize(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    Icons.Filled.AddCircle,
-                    contentDescription = "Add",
-                    modifier = Modifier.size(60.dp) // Size of the bottom icon
-                )
+                Button(
+                    onClick = { viewModel.toggleAddDialog() },
+                    modifier = Modifier
+                        .fillMaxWidth(.9f)
+                        .height(41.dp),
+                    colors = ButtonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                        disabledContentColor = MaterialTheme.colorScheme.primary,
+                        disabledContainerColor = MaterialTheme.colorScheme.onPrimary
+                    )
+                ) {
+                    Text("Add Restaurant")
+                }
+                Spacer(modifier = Modifier.height(0.dp))
             }
+            // Bottom Icon
 
             // Add Restaurant Dialog
             if (viewModel.addDialog) {
@@ -181,9 +195,9 @@ fun ListScreen(
 
 @Composable
 fun RestaurantCard(restaurant: Restaurant) {
-    var backgroundColor = MaterialTheme.colorScheme.surfaceVariant
+    var backgroundColor = MaterialTheme.colorScheme.surface
     if (restaurant.rating.toInt() >= 9) {
-        backgroundColor = MaterialTheme.colorScheme.secondary
+        backgroundColor = MaterialTheme.colorScheme.surfaceVariant
     }
 
     Card(

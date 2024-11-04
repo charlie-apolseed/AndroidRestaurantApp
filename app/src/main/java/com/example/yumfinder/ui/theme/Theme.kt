@@ -20,7 +20,10 @@ private val DarkColorScheme = darkColorScheme(
     surface = Color(0xFFFFFBFE),
     onSurface =  Color.Black,
     secondaryContainer = Color(0xFFD9BCD9),
-    onSecondaryContainer = Color.Black
+    onSecondaryContainer = Color.Black,
+
+    background = Color(0xFFFFFBFE),
+    onBackground = Color(0xFFE7DDE2)
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -32,18 +35,12 @@ private val LightColorScheme = lightColorScheme(
     surface = Color(0xFFFFFBFE),
     onSurface =  Color.Black,
     secondaryContainer = Color(0xFFD9BCD9),
-    onSecondaryContainer = Color.Black
-
-    /* Other default colors to override
+    onSecondaryContainer = Color.Black,
     background = Color(0xFFFFFBFE),
-
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    onBackground = Color(0xFFE7DDE2)
 )
+
+
 
 @Composable
 fun YumFinderTheme(
