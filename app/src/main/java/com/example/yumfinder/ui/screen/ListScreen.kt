@@ -1,6 +1,7 @@
 package com.example.yumfinder.ui.screen
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -42,27 +43,50 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.yumfinder.R
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ListScreen (
+fun ListScreen(
     modifier: Modifier = Modifier,
     viewModel: ListModel = viewModel(),
-    onHomeAction: () -> Unit) {
+    onHomeAction: () -> Unit
+) {
 
     var visitedRestaurants = viewModel.visitedRestaurants
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text(text = "Yum Finder", style = MaterialTheme.typography.headlineMedium) },
+                title = {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Image(
+                                painter = painterResource(id = R.drawable.logo),
+                                contentDescription = "Logo",
+                                modifier = Modifier
+                                    .size(50.dp)
+                                    .padding(end = 10.dp)
+                            )
+                            Text(
+                                text = "| ApolEats",
+                                style = MaterialTheme.typography.headlineMedium
+                            )
+                        }
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.secondaryContainer,
                     titleContentColor = MaterialTheme.colorScheme.onSecondaryContainer,
@@ -125,8 +149,8 @@ fun ListScreen (
             IconButton(
                 onClick = { viewModel.toggleAddDialog() },
                 colors = IconButtonColors(
-                    containerColor = MaterialTheme.colorScheme.onSecondary,
-                    contentColor = MaterialTheme.colorScheme.secondary,
+                    containerColor = MaterialTheme.colorScheme.onPrimary,
+                    contentColor = MaterialTheme.colorScheme.primary,
                     disabledContainerColor = MaterialTheme.colorScheme.onSecondaryContainer,
                     disabledContentColor = MaterialTheme.colorScheme.secondaryContainer
                 ),
@@ -156,13 +180,13 @@ fun ListScreen (
 }
 
 @Composable
-fun RestaurantCard (restaurant: Restaurant) {
+fun RestaurantCard(restaurant: Restaurant) {
     var backgroundColor = MaterialTheme.colorScheme.surfaceVariant
     if (restaurant.rating.toInt() >= 9) {
         backgroundColor = MaterialTheme.colorScheme.secondary
     }
 
-    Card (
+    Card(
         colors = CardDefaults.cardColors(
             containerColor = backgroundColor,
         ), shape = RoundedCornerShape(20.dp), elevation = CardDefaults.cardElevation(
@@ -173,12 +197,24 @@ fun RestaurantCard (restaurant: Restaurant) {
     ) {
         var expanded by remember { mutableStateOf(false) }
 
-        Column (modifier = Modifier
-            .padding(20.dp)
-            .animateContentSize()) {
-            Row (verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth() ) {
+        Column(
+            modifier = Modifier
+                .padding(20.dp)
+                .animateContentSize()
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 Column {
-                    Text(text = restaurant.name, style = MaterialTheme.typography.headlineMedium, modifier = Modifier.widthIn(max = 300.dp), overflow = TextOverflow.Ellipsis, maxLines = 1)
+                    Text(
+                        text = restaurant.name,
+                        style = MaterialTheme.typography.headlineMedium,
+                        modifier = Modifier.widthIn(max = 300.dp),
+                        overflow = TextOverflow.Ellipsis,
+                        maxLines = 1
+                    )
                     Text(text = restaurant.location, style = MaterialTheme.typography.bodyMedium)
                 }
                 Row {
@@ -206,7 +242,7 @@ fun RestaurantCard (restaurant: Restaurant) {
 
 
 @Composable
-fun AddRestaurantDialog (
+fun AddRestaurantDialog(
     viewModel: ListModel,
     onCancel: () -> Unit
 ) {
@@ -216,13 +252,22 @@ fun AddRestaurantDialog (
     var newRestaurantNotes by remember { mutableStateOf("") }
     var dialogErrorText by remember { mutableStateOf(false) }
 
-    Dialog (onDismissRequest = onCancel) {
+    Dialog(onDismissRequest = onCancel) {
         Surface(
-            modifier = Modifier.fillMaxWidth().wrapContentHeight(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight(),
             shape = RoundedCornerShape(size = 6.dp),
         ) {
-            Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text( text = "Add Restaurant Review", modifier = Modifier.padding(8.dp), style = MaterialTheme.typography.headlineMedium)
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Add Restaurant Review",
+                    modifier = Modifier.padding(8.dp),
+                    style = MaterialTheme.typography.headlineMedium
+                )
                 OutlinedTextField(
                     value = newRestaurantName,
                     onValueChange = { newRestaurantName = it },
@@ -249,7 +294,9 @@ fun AddRestaurantDialog (
                         color = MaterialTheme.colorScheme.error
                     )
                 }
-                Button( modifier = Modifier.fillMaxWidth().padding(16.dp),
+                Button(modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
                     onClick = {
                         if (newRestaurantName.isNotBlank() && newRestaurantLocation.isNotBlank() && newRestaurantRating.isNotBlank()) {
                             viewModel.addRestaurant(
