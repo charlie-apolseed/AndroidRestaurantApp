@@ -7,6 +7,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import com.example.yumfinder.R
+import java.util.Date
 
 
 data class Restaurant(
@@ -14,7 +16,9 @@ data class Restaurant(
     val location: String,
     val rating: String,
     val notes: String,
-    var favorite: Boolean = false
+    var favorite: Boolean = false,
+    val image: Int = R.drawable.logo,
+    val date: Date = Date()
 )
 
 class ListModel(savedStateHandle: SavedStateHandle) : ViewModel() {

@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
@@ -47,15 +48,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.yumfinder.R
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -114,78 +119,68 @@ fun ListScreen(
         }
     ) { innerPadding ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
+            modifier
+                .padding(innerPadding)
+                .padding(top = 10.dp)
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.background),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Main Content
-            Column(
+            val pairedRestaurants = visitedRestaurants.chunked(2)
+
+            LazyColumn(
                 modifier = Modifier
-                    .fillMaxHeight(0.9f)
-                    .fillMaxWidth(.9f)
-                    .background(MaterialTheme.colorScheme.primary),
-                verticalArrangement = Arrangement.Top,
+                    .fillMaxWidth()
+                    .fillMaxHeight(.9f),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                if (visitedRestaurants.isEmpty()) {
-                    Card(
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                        ),
-                        shape = RoundedCornerShape(20.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
+                items(pairedRestaurants) { pair ->
+                    Row(
                         modifier = Modifier
-                            .padding(5.dp)
-                            .fillMaxWidth()
-                            .fillMaxWidth(.9f)
+                            .fillMaxWidth(.95f)
+                            .padding(4.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(
-                            text = "No restaurants have been visited yet",
-                            modifier = Modifier.padding(20.dp)
+                        RestaurantCard(
+                            restaurant = pair[0],
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(end = 4.dp)
                         )
-                    }
-                } else {
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .background(MaterialTheme.colorScheme.error)
-                    ) {
-                        items(visitedRestaurants) { visitedRestaurant ->
-                            RestaurantCard(restaurant = visitedRestaurant)
+
+                        if (pair.size > 1) {
+                            RestaurantCard(
+                                restaurant = pair[1],
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(start = 4.dp)
+                            )
+                        } else {
+                            // Optional: Add an empty Spacer to keep alignment if only one item
+                            Spacer(modifier = Modifier.weight(1f))
                         }
                     }
                 }
             }
-            Row(
-                modifier = Modifier.fillMaxSize(),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Button(
-                    onClick = { viewModel.toggleAddDialog() },
-                    modifier = Modifier
-                        .fillMaxWidth(.9f)
-                        .height(41.dp),
-                    colors = ButtonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary,
-                        disabledContentColor = MaterialTheme.colorScheme.primary,
-                        disabledContainerColor = MaterialTheme.colorScheme.onPrimary
-                    )
-                ) {
-                    Text("Add Restaurant")
-                }
-                Spacer(modifier = Modifier.height(0.dp))
-            }
-            // Bottom Icon
 
-            // Add Restaurant Dialog
+            Button(
+                modifier = Modifier
+                    .padding(top = 10.dp)
+                    .fillMaxWidth(0.9f)
+                    .height(62.dp),
+                onClick = { viewModel.toggleAddDialog() },
+                shape = RoundedCornerShape(16.dp)
+            )
+            {
+                Text("Add Restaurant", style = MaterialTheme.typography.labelMedium)
+            }
+
+
+            // Open dialog for adding new restaurant
             if (viewModel.addDialog) {
-                AddRestaurantDialog(
-                    viewModel,
-                    onCancel = { viewModel.toggleAddDialog() }
-                )
+                AddRestaurantDialog(viewModel) {
+                    viewModel.toggleAddDialog()
+                }
             }
         }
     }
@@ -193,62 +188,90 @@ fun ListScreen(
 
 }
 
+
 @Composable
-fun RestaurantCard(restaurant: Restaurant) {
-    var backgroundColor = MaterialTheme.colorScheme.surface
-    if (restaurant.rating.toInt() >= 9) {
-        backgroundColor = MaterialTheme.colorScheme.surfaceVariant
+fun RestaurantCard(restaurant: Restaurant, modifier: Modifier) {
+    val name = if (restaurant.name.length > 20) {
+        restaurant.name.substring(0, 17) + "..."
+    } else {
+        restaurant.name
     }
+
+    val location = if (restaurant.location.length > 20) {
+        restaurant.location.substring(0, 17) + "..."
+    } else {
+        restaurant.location
+    }
+    val formatter = SimpleDateFormat("d MMMM, yyyy", Locale.getDefault())
+    val formattedDate = formatter.format(restaurant.date)
 
     Card(
         colors = CardDefaults.cardColors(
-            containerColor = backgroundColor,
-        ), shape = RoundedCornerShape(20.dp), elevation = CardDefaults.cardElevation(
-            defaultElevation = 10.dp
-        ), modifier = Modifier
-            .padding(5.dp)
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        ),
+        shape = RoundedCornerShape(20.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        modifier = modifier
+            .padding(vertical = 4.dp)
             .fillMaxWidth()
     ) {
-        var expanded by remember { mutableStateOf(false) }
-
         Column(
             modifier = Modifier
-                .padding(20.dp)
+                .fillMaxWidth()
                 .animateContentSize()
+                .padding(8.dp)
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column {
-                    Text(
-                        text = restaurant.name,
-                        style = MaterialTheme.typography.headlineMedium,
-                        modifier = Modifier.widthIn(max = 300.dp),
-                        overflow = TextOverflow.Ellipsis,
-                        maxLines = 1
-                    )
-                    Text(text = restaurant.location, style = MaterialTheme.typography.bodyMedium)
-                }
-                Row {
-                    Text(text = restaurant.rating, style = MaterialTheme.typography.headlineMedium)
+            Image(
+                painter = painterResource(id = restaurant.image),
+                contentDescription = "Restaurant Image",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(150.dp)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
 
-                    IconButton(onClick = { expanded = !expanded }) {
-                        Icon(
-                            imageVector = if (expanded) Icons.Filled.KeyboardArrowUp
-                            else Icons.Filled.KeyboardArrowDown,
-                            contentDescription = if (expanded) {
-                                "Less"
-                            } else {
-                                "More"
-                            }
-                        )
-                    }
+            Text(
+                text = name,
+                style = MaterialTheme.typography.titleLarge,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .padding(horizontal = 4.dp)
+                    .fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 4.dp)
+                    .padding(horizontal = 4.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = location,
+                        style = MaterialTheme.typography.bodyMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        text = formattedDate,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
-            }
-            if (expanded) {
-                Text(text = restaurant.notes, style = MaterialTheme.typography.bodySmall)
+                Text(
+                    text = restaurant.rating,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                )
             }
         }
     }
@@ -278,9 +301,10 @@ fun AddRestaurantDialog(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Add Restaurant Review",
+                    text = "Restaurant Review",
                     modifier = Modifier.padding(8.dp),
-                    style = MaterialTheme.typography.headlineMedium
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = Color.Black
                 )
                 OutlinedTextField(
                     value = newRestaurantName,
@@ -310,7 +334,9 @@ fun AddRestaurantDialog(
                 }
                 Button(modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(16.dp)
+                    ,
+                    shape = RoundedCornerShape(8.dp),
                     onClick = {
                         if (newRestaurantName.isNotBlank() && newRestaurantLocation.isNotBlank() && newRestaurantRating.isNotBlank()) {
                             viewModel.addRestaurant(
@@ -325,7 +351,7 @@ fun AddRestaurantDialog(
                         }
                     }
                 ) {
-                    Text(text = "Add Restaurant")
+                    Text(text = "Confirm", style = MaterialTheme.typography.labelMedium)
                 }
             }
 
