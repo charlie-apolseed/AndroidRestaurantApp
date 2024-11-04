@@ -1,10 +1,13 @@
 package com.example.yumfinder.ui.screen.home
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -16,7 +19,10 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.unit.dp
+import com.example.yumfinder.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,9 +34,19 @@ fun HomeScreen(modifier: Modifier = Modifier,
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
-                    Column (horizontalAlignment = Alignment.CenterHorizontally){
-                        Text(text = "Yum Finder", style = MaterialTheme.typography.headlineMedium)
+                    Column (horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center){
+                        Row (verticalAlignment = Alignment.CenterVertically) {
+                            Image(
+                                painter = painterResource(id = R.drawable.logo),
+                                contentDescription = "Priority",
+                                modifier = Modifier
+                                    .size(50.dp)
+                                    .padding(end = 10.dp)
+                            )
+                            Text(text = "| ApolEats", style = MaterialTheme.typography.headlineMedium)
+                        }
                         Text(
+                            modifier = Modifier.padding(bottom = 10.dp),
                             style = MaterialTheme.typography.bodySmall.copy(fontStyle = FontStyle.Italic),
                             text = "Find your next favorite restaurant")
                     }
@@ -51,37 +67,37 @@ fun HomeScreen(modifier: Modifier = Modifier,
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Button(
-                modifier = Modifier.fillMaxWidth(0.6f),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.secondary,
-                    contentColor = MaterialTheme.colorScheme.onSecondary
-                ),
-                onClick = {
-                    onListAction()
-                }) {
-                Text("Restaurant List")
-            }
-            Button(
-                modifier = Modifier.fillMaxWidth(0.6f),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.secondary,
-                    contentColor = MaterialTheme.colorScheme.onSecondary
-                ),
-                onClick = {
-                    onAddAction()
-                }) {
-                Text("Add New Restaurant")
-            }
-            Button(
-                modifier = Modifier.fillMaxWidth(0.6f),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.secondary,
-                    contentColor = MaterialTheme.colorScheme.onSecondary
-                ),
-                onClick = {}) {
-                Text("Help")
-            }
+//            Button(
+//                modifier = Modifier.fillMaxWidth(0.6f),
+//                colors = ButtonDefaults.buttonColors(
+//                    containerColor = MaterialTheme.colorScheme.secondary,
+//                    contentColor = MaterialTheme.colorScheme.onSecondary
+//                ),
+//                onClick = {
+//                    onListAction()
+//                }) {
+//                Text("Restaurant List")
+//            }
+//            Button(
+//                modifier = Modifier.fillMaxWidth(0.6f),
+//                colors = ButtonDefaults.buttonColors(
+//                    containerColor = MaterialTheme.colorScheme.secondary,
+//                    contentColor = MaterialTheme.colorScheme.onSecondary
+//                ),
+//                onClick = {
+//                    onAddAction()
+//                }) {
+//                Text("Add New Restaurant")
+//            }
+//            Button(
+//                modifier = Modifier.fillMaxWidth(0.6f),
+//                colors = ButtonDefaults.buttonColors(
+//                    containerColor = MaterialTheme.colorScheme.secondary,
+//                    contentColor = MaterialTheme.colorScheme.onSecondary
+//                ),
+//                onClick = {}) {
+//                Text("Help")
+//            }
         }
     }
 }
