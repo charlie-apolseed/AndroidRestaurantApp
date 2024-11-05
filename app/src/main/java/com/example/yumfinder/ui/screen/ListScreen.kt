@@ -3,37 +3,30 @@ package com.example.yumfinder.ui.screen
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -42,6 +35,7 @@ import androidx.compose.material3.Text
 
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,15 +44,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.yumfinder.R
+import com.example.yumfinder.data.RestaurantItem
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -67,11 +60,11 @@ import java.util.Locale
 @Composable
 fun ListScreen(
     modifier: Modifier = Modifier,
-    viewModel: ListModel = viewModel(),
+    viewModel: ListModel = hiltViewModel(),
     onHomeAction: () -> Unit
 ) {
 
-    var visitedRestaurants = viewModel.visitedRestaurants
+    val visitedRestaurants by viewModel.getAllRestaurants().collectAsState(initial = emptyList())
 
     Scaffold(
         topBar = {
@@ -177,7 +170,7 @@ fun ListScreen(
 
 
             // Open dialog for adding new restaurant
-            if (viewModel.addDialog) {
+            if (viewModel.showAddDialog) {
                 AddRestaurantDialog(viewModel) {
                     viewModel.toggleAddDialog()
                 }
@@ -190,27 +183,32 @@ fun ListScreen(
 
 
 @Composable
-fun RestaurantCard(restaurant: Restaurant, modifier: Modifier) {
-    val name = if (restaurant.name.length > 20) {
-        restaurant.name.substring(0, 17) + "..."
+fun RestaurantCard(restaurant: RestaurantItem, modifier: Modifier) {
+    val name = if (restaurant.restaurantName.length > 20) {
+        restaurant.restaurantName.substring(0, 17) + "..."
     } else {
-        restaurant.name
+        restaurant.restaurantName
     }
 
-    val location = if (restaurant.location.length > 20) {
-        restaurant.location.substring(0, 17) + "..."
+    val location = if (restaurant.restaurantAddress.length > 20) {
+        restaurant.restaurantAddress.substring(0, 17) + "..."
     } else {
-        restaurant.location
+        restaurant.restaurantAddress
     }
-    val formatter = SimpleDateFormat("d MMMM, yyyy", Locale.getDefault())
-    val formattedDate = formatter.format(restaurant.date)
+
+    val dateFormatted = restaurant.restaurantDate.substring(4, 10) + ", " + restaurant.restaurantDate.substring(30) + ""
+    val backgroundColor = if (restaurant.restaurantRating.toFloat() > 9) {
+        MaterialTheme.colorScheme.secondaryContainer
+    } else {
+        MaterialTheme.colorScheme.surfaceVariant
+    }
 
     Card(
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
+            containerColor = backgroundColor
         ),
-        shape = RoundedCornerShape(20.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        shape = RoundedCornerShape(10.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
         modifier = modifier
             .padding(vertical = 4.dp)
             .fillMaxWidth()
@@ -222,7 +220,7 @@ fun RestaurantCard(restaurant: Restaurant, modifier: Modifier) {
                 .padding(8.dp)
         ) {
             Image(
-                painter = painterResource(id = restaurant.image),
+                painter = painterResource(id = restaurant.restaurantImage),
                 contentDescription = "Restaurant Image",
                 modifier = Modifier
                     .fillMaxWidth()
@@ -261,13 +259,13 @@ fun RestaurantCard(restaurant: Restaurant, modifier: Modifier) {
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
-                        text = formattedDate,
+                        text = dateFormatted,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 Text(
-                    text = restaurant.rating,
+                    text = restaurant.restaurantRating,
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.padding(horizontal = 8.dp)

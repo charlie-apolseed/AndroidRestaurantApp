@@ -15,7 +15,10 @@ import androidx.navigation.compose.rememberNavController
 import com.example.yumfinder.ui.screen.ListScreen
 import com.example.yumfinder.ui.screen.home.HomeScreen
 import com.example.yumfinder.ui.theme.YumFinderTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

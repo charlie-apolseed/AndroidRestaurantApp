@@ -7,44 +7,74 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.yumfinder.R
+import com.example.yumfinder.data.RestaurantDAO
+import com.example.yumfinder.data.RestaurantItem
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.util.Date
+import javax.inject.Inject
 
-
-data class Restaurant(
-    val name: String,
-    val location: String,
-    val rating: String,
-    val notes: String,
-    var favorite: Boolean = false,
-    val image: Int = R.drawable.logo,
-    val date: Date = Date()
-)
-
-class ListModel(savedStateHandle: SavedStateHandle) : ViewModel() {
-    var addDialog by mutableStateOf(false)
-    var visitedRestaurants = mutableStateListOf<Restaurant>()
-
+@HiltViewModel
+class ListModel @Inject constructor(
+    val restaurantDAO: RestaurantDAO
+    , val savedStateHandle: SavedStateHandle
+) : ViewModel() {
+    var showAddDialog by mutableStateOf(false)
     init {
-        addDialog = savedStateHandle.get<String>("addDialog").toBoolean() ?: false
+        showAddDialog = savedStateHandle.get<String>("addDialog").toBoolean()
     }
 
     fun toggleAddDialog() {
-        addDialog = !addDialog
+        showAddDialog = !showAddDialog
     }
 
+
+    fun getAllRestaurants() = restaurantDAO.getALlRestaurants()
+    fun getRestaurant(id: Int) = restaurantDAO.getRestaurant(id)
 
     fun addRestaurant(name: String, location: String, rating: String, notes: String) {
-        val newRestaurant = Restaurant(name = name, location = location, rating = rating, notes = notes)
-        visitedRestaurants.add(newRestaurant) // Add directly to the state list
-        Log.d("ListModel", "Added restaurant: $newRestaurant")
-        Log.d("ListModel", "All Restaurants: $visitedRestaurants")
+        viewModelScope.launch(Dispatchers.IO) {
+            val newRestaurant = RestaurantItem(
+                restaurantName = name,
+                restaurantAddress = location,
+                restaurantRating = rating,
+                restaurantNotes = notes,
+                restaurantFavorite = false,
+                restaurantImage = R.drawable.logo,
+                restaurantDate = Date(System.currentTimeMillis()).toString()
+            )
+            Log.d("ListModel", "Adding restaurant: $newRestaurant")
+            restaurantDAO.insert(newRestaurant)
+        }
     }
 
-    fun toggleFavorite(restaurant: Restaurant) {
-        val index = visitedRestaurants.indexOf(restaurant)
-        if (index >= 0) {
-            visitedRestaurants[index] = visitedRestaurants[index].copy(favorite = !restaurant.favorite)
+    fun deleteRestaurant(restaurant: RestaurantItem) {
+        viewModelScope.launch(Dispatchers.IO) {
+            restaurantDAO.delete(restaurant)
+        }
+    }
+
+    fun updateRestaurant(restaurant: RestaurantItem) {
+        viewModelScope.launch(Dispatchers.IO) {
+            restaurantDAO.update(restaurant)
+        }
+    }
+
+    fun toggleFavorite(restaurant: RestaurantItem) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val updatedRestaurant =
+                restaurant.copy(restaurantFavorite = !restaurant.restaurantFavorite)
+            restaurantDAO.update(updatedRestaurant)
+        }
+    }
+
+    fun deleteAllRestaurants() {
+        viewModelScope.launch(Dispatchers.IO) {
+            restaurantDAO.deleteAll()
         }
     }
 }
+

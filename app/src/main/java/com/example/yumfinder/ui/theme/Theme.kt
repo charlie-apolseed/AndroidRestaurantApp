@@ -1,29 +1,27 @@
 package com.example.yumfinder.ui.theme
 
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
+
 
 private val DarkColorScheme = darkColorScheme(
     primary = Color(0xFF3F1F3F),
     onPrimary = Color.White,
     secondary = Color(0xFFAF99AF),
     tertiary = Pink40,
-    surfaceBright = SurfaceBright,
+
     surface = Color(0xFFFFFBFE),
-    onSurface =  Color.Black,
+    onSurface = Color.Black,
     secondaryContainer = Color(0xFFD9BCD9),
     onSecondaryContainer = Color.Black,
 
     background = Color(0xFFFFFBFE),
-    onBackground = Color(0xFFCBC0C5)
+    onBackground = Color(0xFFCBC0C5),
+    surfaceVariant = Color(0xFFE7DDE2)
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -31,15 +29,16 @@ private val LightColorScheme = lightColorScheme(
     onPrimary = Color.White,
     secondary = Color(0xFFAF99AF),
     tertiary = Pink40,
-    surfaceBright = SurfaceBright,
     surface = Color(0xFFFFFBFE),
-    onSurface =  Color.Black,
+    onSurface = Color.Black,
     secondaryContainer = Color(0xFFD9BCD9),
     onSecondaryContainer = Color.Black,
     background = Color(0xFFFFFBFE),
-    onBackground = Color(0xFFE7DDE2)
-)
+    onBackground = Color(0xFFE7DDE2),
+    surfaceVariant = Color(0xFFE7DDE2),
 
+
+)
 
 
 @Composable
