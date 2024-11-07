@@ -1,5 +1,6 @@
 package com.example.yumfinder.ui.screen
 
+import android.widget.SearchView
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -24,14 +26,22 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TextFieldDefaults
 
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -39,11 +49,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 
 import androidx.compose.ui.unit.dp
@@ -65,6 +78,7 @@ fun ListScreen(
 ) {
 
     val visitedRestaurants by viewModel.getAllRestaurants().collectAsState(initial = emptyList())
+    var searchQuery by rememberSaveable { mutableStateOf("") }
 
     Scaffold(
         topBar = {
@@ -119,6 +133,112 @@ fun ListScreen(
                 .background(MaterialTheme.colorScheme.background),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                ExposedDropdownMenuBox(
+                    modifier = Modifier
+                        .padding(horizontal = 10.dp)
+                        .width(150.dp),
+                    expanded = viewModel.showFilterDialog,
+                    onExpandedChange = { viewModel.toggleFilterDialog() })
+                {
+                    OutlinedTextField(
+                        value = viewModel.selectedFilter,
+                        onValueChange = {},
+                        readOnly = true,
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = viewModel.showFilterDialog) },
+                        modifier = Modifier.menuAnchor(),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                            focusedTextColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                    )
+                    ExposedDropdownMenu(
+                        expanded = viewModel.showFilterDialog,
+                        onDismissRequest = { viewModel.showFilterDialog = false },
+                        modifier = Modifier.background(MaterialTheme.colorScheme.background)
+                    )
+                    {
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    style = MaterialTheme.typography.titleLarge,
+                                    text = "Rating"
+                                )
+                            },
+                            onClick = {
+                                viewModel.selectedFilter = "Rating"
+                                //TODO sort the restaurants
+                                viewModel.showFilterDialog = false
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    style = MaterialTheme.typography.titleLarge,
+                                    text = "Date"
+                                )
+                            },
+                            onClick = {
+                                viewModel.selectedFilter = "Date"
+                                //TODO sort the restaurants
+                                viewModel.showFilterDialog = false
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    style = MaterialTheme.typography.titleLarge,
+                                    text = "Location"
+                                )
+                            },
+                            onClick = {
+                                viewModel.selectedFilter = "Location"
+                                //TODO sort the restaurants
+                                viewModel.showFilterDialog = false
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight(500)
+                                    , text =
+                                    if (viewModel.selectedFilterDescending) "Descending" else "Ascending"
+                                )
+                            },
+                            onClick = {
+                                viewModel.selectedFilterDescending =
+                                    !viewModel.selectedFilterDescending
+                                //TODO sort the restaurants
+                            }
+                        )
+                    }
+                }
+                OutlinedTextField(
+                    modifier = Modifier
+                        .padding(horizontal = 10.dp)
+                        .weight(1f)
+                        .height(48.dp), // Increased height for better usability
+                    shape = RoundedCornerShape(8.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                        focusedTextColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSecondaryContainer
+                    ),
+                    label = { Text("Search") },
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it }
+                )
+
+            }
             val pairedRestaurants = visitedRestaurants.chunked(2)
 
             LazyColumn(
@@ -196,7 +316,10 @@ fun RestaurantCard(restaurant: RestaurantItem, modifier: Modifier) {
         restaurant.restaurantAddress
     }
 
-    val dateFormatted = restaurant.restaurantDate.substring(4, 10) + ", " + restaurant.restaurantDate.substring(30) + ""
+    val dateFormatted = restaurant.restaurantDate.substring(
+        4,
+        10
+    ) + ", " + restaurant.restaurantDate.substring(30) + ""
     val backgroundColor = if (restaurant.restaurantRating.toFloat() > 9) {
         MaterialTheme.colorScheme.secondaryContainer
     } else {
@@ -332,8 +455,7 @@ fun AddRestaurantDialog(
                 }
                 Button(modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
-                    ,
+                    .padding(16.dp),
                     shape = RoundedCornerShape(8.dp),
                     onClick = {
                         if (newRestaurantName.isNotBlank() && newRestaurantLocation.isNotBlank() && newRestaurantRating.isNotBlank()) {

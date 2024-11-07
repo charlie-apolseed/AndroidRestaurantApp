@@ -23,6 +23,10 @@ class ListModel @Inject constructor(
     , val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     var showAddDialog by mutableStateOf(false)
+    var showFilterDialog by mutableStateOf(false)
+    var selectedFilter by mutableStateOf("Filter")
+    var selectedFilterDescending by mutableStateOf(false)
+
     init {
         showAddDialog = savedStateHandle.get<String>("addDialog").toBoolean()
     }
@@ -31,8 +35,14 @@ class ListModel @Inject constructor(
         showAddDialog = !showAddDialog
     }
 
+    fun toggleFilterDialog() {
+        showFilterDialog = !showFilterDialog
+    }
 
-    fun getAllRestaurants() = restaurantDAO.getALlRestaurants()
+
+
+
+    fun getAllRestaurants() = restaurantDAO.getAllRestaurants()
     fun getRestaurant(id: Int) = restaurantDAO.getRestaurant(id)
 
     fun addRestaurant(name: String, location: String, rating: String, notes: String) {

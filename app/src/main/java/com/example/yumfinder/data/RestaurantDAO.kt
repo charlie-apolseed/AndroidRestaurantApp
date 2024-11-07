@@ -13,7 +13,7 @@ import com.example.yumfinder.data.RestaurantItem
 @Dao
 interface RestaurantDAO {
     @Query("SELECT * FROM restaurant_table ORDER BY restaurant_date")
-    fun getALlRestaurants() : Flow<List<RestaurantItem>>
+    fun getAllRestaurants() : Flow<List<RestaurantItem>>
 
     @Query("SELECT * from restaurant_table WHERE id = :id")
     fun getRestaurant(id: Int): Flow<RestaurantItem>
