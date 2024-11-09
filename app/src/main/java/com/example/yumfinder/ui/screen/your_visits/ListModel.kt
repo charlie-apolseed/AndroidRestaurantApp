@@ -10,6 +10,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.yumfinder.R
 import com.example.yumfinder.data.RestaurantDAO
 import com.example.yumfinder.data.RestaurantItem
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -19,7 +21,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ListModel @Inject constructor(
     val restaurantDAO: RestaurantDAO
-    , val savedStateHandle: SavedStateHandle
+    , savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     var showAddDialog by mutableStateOf(false)
     var showFilterDialog by mutableStateOf(false)
@@ -38,12 +40,8 @@ class ListModel @Inject constructor(
         showFilterDialog = !showFilterDialog
     }
 
+    fun getAllUserRestaurants(reviewer: String) = restaurantDAO.getAllUserRestaurants(reviewer)
 
-
-
-
-    fun getAllRestaurants() = restaurantDAO.getAllRestaurants()
-    fun getRestaurant(id: Int) = restaurantDAO.getRestaurant(id)
 
     fun addRestaurant(name: String, location: String, rating: String, notes: String) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -54,36 +52,11 @@ class ListModel @Inject constructor(
                 restaurantNotes = notes,
                 restaurantFavorite = false,
                 restaurantImage = R.drawable.logo,
+                restaurantReviewer = Firebase.auth.currentUser?.email ?: "Unknown",
                 restaurantDate = Date(System.currentTimeMillis()).toString()
             )
             Log.d("ListModel", "Adding restaurant: $newRestaurant")
             restaurantDAO.insert(newRestaurant)
-        }
-    }
-
-    fun deleteRestaurant(restaurant: RestaurantItem) {
-        viewModelScope.launch(Dispatchers.IO) {
-            restaurantDAO.delete(restaurant)
-        }
-    }
-
-    fun updateRestaurant(restaurant: RestaurantItem) {
-        viewModelScope.launch(Dispatchers.IO) {
-            restaurantDAO.update(restaurant)
-        }
-    }
-
-    fun toggleFavorite(restaurant: RestaurantItem) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val updatedRestaurant =
-                restaurant.copy(restaurantFavorite = !restaurant.restaurantFavorite)
-            restaurantDAO.update(updatedRestaurant)
-        }
-    }
-
-    fun deleteAllRestaurants() {
-        viewModelScope.launch(Dispatchers.IO) {
-            restaurantDAO.deleteAll()
         }
     }
 }

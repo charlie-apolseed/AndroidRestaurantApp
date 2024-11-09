@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -57,6 +58,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.yumfinder.R
 import com.example.yumfinder.data.RestaurantItem
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -67,7 +70,7 @@ fun ListScreen(
     onHomeAction: () -> Unit
 ) {
 
-    val visitedRestaurants by viewModel.getAllRestaurants().collectAsState(initial = emptyList())
+    val visitedRestaurants by viewModel.getAllUserRestaurants(reviewer = Firebase.auth.currentUser?.email ?: "Unknown").collectAsState(initial = emptyList())
     var sortedRestaurants by remember { mutableStateOf(visitedRestaurants) }
     var searchQuery by rememberSaveable { mutableStateOf("") }
 
@@ -248,7 +251,8 @@ fun ListScreen(
                 OutlinedTextField(
                     modifier = Modifier
                         .padding(horizontal = 10.dp)
-                        .weight(1f).height(55.dp),
+                        .weight(1f)
+                        .height(55.dp),
                     singleLine = true,
                     shape = RoundedCornerShape(8.dp),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -444,12 +448,27 @@ fun AddRestaurantDialog(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    text = "Restaurant Review",
-                    modifier = Modifier.padding(8.dp),
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = Color.Black
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(.9f),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "Restaurant Review",
+                        modifier = Modifier.padding(8.dp),
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = Color.Black
+                    )
+                    IconButton(onClick = onCancel) {
+                        Icon(
+                            Icons.Filled.Close,
+                            contentDescription = "Exit",
+                            modifier = Modifier.size(32.dp),
+                            tint = Color.Black
+                        )
+                    }
+                }
+
+
                 OutlinedTextField(
                     value = newRestaurantName,
                     onValueChange = { newRestaurantName = it },
@@ -466,6 +485,7 @@ fun AddRestaurantDialog(
                     label = { Text("Rating (1-10)") }
                 )
                 OutlinedTextField(
+                    modifier = Modifier.fillMaxWidth(.88f),
                     value = newRestaurantNotes,
                     onValueChange = { newRestaurantNotes = it },
                     label = { Text("Notes") }

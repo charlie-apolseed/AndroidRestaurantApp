@@ -8,12 +8,15 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
-import com.example.yumfinder.data.RestaurantItem
+
 
 @Dao
 interface RestaurantDAO {
     @Query("SELECT * FROM restaurant_table ORDER BY restaurant_date")
     fun getAllRestaurants() : Flow<List<RestaurantItem>>
+
+    @Query("SELECT * FROM restaurant_table WHERE restaurant_reviewer = :reviewer ORDER BY restaurant_date")
+    fun getAllUserRestaurants(reviewer: String) : Flow<List<RestaurantItem>>
 
     @Query("SELECT * from restaurant_table WHERE id = :id")
     fun getRestaurant(id: Int): Flow<RestaurantItem>
