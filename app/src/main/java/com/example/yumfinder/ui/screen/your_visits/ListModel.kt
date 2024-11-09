@@ -53,7 +53,8 @@ class ListModel @Inject constructor(
                 restaurantFavorite = false,
                 restaurantImage = R.drawable.logo,
                 restaurantReviewer = Firebase.auth.currentUser?.email ?: "Unknown",
-                restaurantDate = Date(System.currentTimeMillis()).toString()
+                createdDate = Date(System.currentTimeMillis()).toString(),
+                visitedDate = Date(System.currentTimeMillis()).toString()
             )
             Log.d("ListModel", "Adding restaurant: $newRestaurant")
             restaurantDAO.insert(newRestaurant)

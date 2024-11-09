@@ -16,7 +16,8 @@ data class RestaurantItem(
     @ColumnInfo(name = "restaurant_notes") val restaurantNotes: String,
     @ColumnInfo(name = "restaurant_favorite") val restaurantFavorite: Boolean,
     @ColumnInfo(name = "restaurant_image") val restaurantImage: Int,
-    @ColumnInfo(name = "restaurant_date") val restaurantDate: String
+    @ColumnInfo(name = "created_date") val createdDate: String,
+    @ColumnInfo(name = "visited_date") val visitedDate: String
     ) : Serializable
 
 

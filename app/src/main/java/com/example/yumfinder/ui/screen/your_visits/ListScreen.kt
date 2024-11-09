@@ -90,9 +90,9 @@ fun ListScreen(
 
             "Date" -> {
                 if (viewModel.selectedFilterDescending) {
-                    visitedRestaurants.sortedByDescending { it.restaurantDate }
+                    visitedRestaurants.sortedByDescending { it.visitedDate }
                 } else {
-                    visitedRestaurants.sortedBy { it.restaurantDate }
+                    visitedRestaurants.sortedBy { it.visitedDate }
                 }
             }
 
@@ -343,10 +343,10 @@ fun RestaurantCard(restaurant: RestaurantItem, modifier: Modifier) {
         restaurant.restaurantAddress
     }
 
-    val dateFormatted = restaurant.restaurantDate.substring(
+    val dateFormatted = restaurant.visitedDate.substring(
         4,
         10
-    ) + ", " + restaurant.restaurantDate.substring(30) + ""
+    ) + ", " + restaurant.visitedDate.substring(30) + ""
     val backgroundColor = if (restaurant.restaurantRating.toFloat() > 9) {
         MaterialTheme.colorScheme.secondaryContainer
     } else {

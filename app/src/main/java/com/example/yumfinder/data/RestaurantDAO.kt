@@ -12,10 +12,10 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface RestaurantDAO {
-    @Query("SELECT * FROM restaurant_table ORDER BY restaurant_date")
+    @Query("SELECT * FROM restaurant_table ORDER BY visited_date")
     fun getAllRestaurants() : Flow<List<RestaurantItem>>
 
-    @Query("SELECT * FROM restaurant_table WHERE restaurant_reviewer = :reviewer ORDER BY restaurant_date")
+    @Query("SELECT * FROM restaurant_table WHERE restaurant_reviewer = :reviewer ORDER BY visited_date")
     fun getAllUserRestaurants(reviewer: String) : Flow<List<RestaurantItem>>
 
     @Query("SELECT * from restaurant_table WHERE id = :id")
