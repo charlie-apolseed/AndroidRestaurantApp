@@ -1,11 +1,8 @@
-package com.example.yumfinder.ui.screen
+package com.example.yumfinder.ui.screen.your_visits
 
-import android.widget.SearchView
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -33,18 +30,15 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldColors
-import androidx.compose.material3.TextFieldDefaults
 
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -55,18 +49,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.yumfinder.R
 import com.example.yumfinder.data.RestaurantItem
-import java.text.SimpleDateFormat
-import java.util.Locale
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -78,7 +68,42 @@ fun ListScreen(
 ) {
 
     val visitedRestaurants by viewModel.getAllRestaurants().collectAsState(initial = emptyList())
+    var sortedRestaurants by remember { mutableStateOf(visitedRestaurants) }
     var searchQuery by rememberSaveable { mutableStateOf("") }
+
+    LaunchedEffect(visitedRestaurants) {
+        sortedRestaurants = visitedRestaurants
+    }
+
+    fun sortRestaurants() {
+        sortedRestaurants = when (viewModel.selectedFilter) {
+            "Rating" -> {
+                if (viewModel.selectedFilterDescending) {
+                    visitedRestaurants.sortedBy { it.restaurantRating.toFloat() }
+                } else {
+                    visitedRestaurants.sortedByDescending { it.restaurantRating.toFloat() }
+                }
+            }
+
+            "Date" -> {
+                if (viewModel.selectedFilterDescending) {
+                    visitedRestaurants.sortedByDescending { it.restaurantDate }
+                } else {
+                    visitedRestaurants.sortedBy { it.restaurantDate }
+                }
+            }
+
+            "Location" -> {
+                if (viewModel.selectedFilterDescending) {
+                    visitedRestaurants.sortedByDescending { it.restaurantAddress }
+                } else {
+                    visitedRestaurants.sortedBy { it.restaurantAddress }
+                }
+            }
+
+            else -> visitedRestaurants
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -118,7 +143,7 @@ fun ListScreen(
                         Icon(
                             Icons.Filled.Home,
                             contentDescription = "Home",
-                            modifier = Modifier.size(32.dp) // Size of the top action icon
+                            modifier = Modifier.size(32.dp)
                         )
                     }
                 }
@@ -143,8 +168,8 @@ fun ListScreen(
                         .padding(horizontal = 10.dp)
                         .width(150.dp),
                     expanded = viewModel.showFilterDialog,
-                    onExpandedChange = { viewModel.toggleFilterDialog() })
-                {
+                    onExpandedChange = { viewModel.toggleFilterDialog() }
+                ) {
                     OutlinedTextField(
                         value = viewModel.selectedFilter,
                         onValueChange = {},
@@ -163,8 +188,7 @@ fun ListScreen(
                         expanded = viewModel.showFilterDialog,
                         onDismissRequest = { viewModel.showFilterDialog = false },
                         modifier = Modifier.background(MaterialTheme.colorScheme.background)
-                    )
-                    {
+                    ) {
                         DropdownMenuItem(
                             text = {
                                 Text(
@@ -174,7 +198,7 @@ fun ListScreen(
                             },
                             onClick = {
                                 viewModel.selectedFilter = "Rating"
-                                //TODO sort the restaurants
+                                sortRestaurants() // Sort based on Rating
                                 viewModel.showFilterDialog = false
                             }
                         )
@@ -187,7 +211,7 @@ fun ListScreen(
                             },
                             onClick = {
                                 viewModel.selectedFilter = "Date"
-                                //TODO sort the restaurants
+                                sortRestaurants()
                                 viewModel.showFilterDialog = false
                             }
                         )
@@ -200,7 +224,7 @@ fun ListScreen(
                             },
                             onClick = {
                                 viewModel.selectedFilter = "Location"
-                                //TODO sort the restaurants
+                                sortRestaurants()
                                 viewModel.showFilterDialog = false
                             }
                         )
@@ -208,24 +232,24 @@ fun ListScreen(
                             text = {
                                 Text(
                                     style = MaterialTheme.typography.titleLarge,
-                                    fontWeight = FontWeight(500)
-                                    , text =
-                                    if (viewModel.selectedFilterDescending) "Descending" else "Ascending"
+                                    fontWeight = FontWeight(500),
+                                    text = if (viewModel.selectedFilterDescending) "Descending" else "Ascending"
                                 )
                             },
                             onClick = {
                                 viewModel.selectedFilterDescending =
                                     !viewModel.selectedFilterDescending
-                                //TODO sort the restaurants
+                                sortRestaurants() // Toggle sorting order and sort
                             }
                         )
                     }
                 }
+
                 OutlinedTextField(
                     modifier = Modifier
                         .padding(horizontal = 10.dp)
-                        .weight(1f)
-                        .height(48.dp), // Increased height for better usability
+                        .weight(1f).height(55.dp),
+                    singleLine = true,
                     shape = RoundedCornerShape(8.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.onSecondaryContainer,
@@ -233,13 +257,13 @@ fun ListScreen(
                         focusedTextColor = MaterialTheme.colorScheme.onSecondaryContainer,
                         unfocusedTextColor = MaterialTheme.colorScheme.onSecondaryContainer
                     ),
-                    label = { Text("Search") },
+                    placeholder = { Text("Search") },
                     value = searchQuery,
                     onValueChange = { searchQuery = it }
                 )
-
             }
-            val pairedRestaurants = visitedRestaurants.chunked(2)
+
+            val pairedRestaurants = sortedRestaurants.chunked(2)
 
             LazyColumn(
                 modifier = Modifier
@@ -269,7 +293,6 @@ fun ListScreen(
                                     .padding(start = 4.dp)
                             )
                         } else {
-                            // Optional: Add an empty Spacer to keep alignment if only one item
                             Spacer(modifier = Modifier.weight(1f))
                         }
                     }
@@ -343,7 +366,7 @@ fun RestaurantCard(restaurant: RestaurantItem, modifier: Modifier) {
                 .padding(8.dp)
         ) {
             Image(
-                painter = painterResource(id = restaurant.restaurantImage),
+                painter = painterResource(R.drawable.logo), //TODO implement picture adding
                 contentDescription = "Restaurant Image",
                 modifier = Modifier
                     .fillMaxWidth()

@@ -122,9 +122,11 @@ fun HomeScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(fontSize = 18.sp,
+                        Text(
+                            fontSize = 18.sp,
                             fontWeight = FontWeight(600),
-                            text = "Visited")
+                            text = "Your Visits"
+                        )
                         Image(
                             painter = painterResource(id = R.drawable.list),
                             contentDescription = "List",
@@ -168,6 +170,41 @@ fun HomeScreen(
                             modifier = Modifier.size(25.dp)
                         )
                     }
+                }
+            }
+
+            Button(
+                modifier = Modifier
+                    .padding(top = 15.dp)
+                    .fillMaxWidth(.9f)
+                    .height(150.dp), // Same height for consistency
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    contentColor = MaterialTheme.colorScheme.onSurface
+                ),
+                shape = RoundedCornerShape(8.dp),
+                elevation = ButtonDefaults.buttonElevation(
+                    defaultElevation = 5.dp
+                ),
+                onClick = {
+                    // TODO Handle "All Restaurants" button click
+                }
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight(600),
+                        text = "All Restaurants"
+                    )
+                    Image(
+                        painter = painterResource(id = R.drawable.add),
+                        contentDescription = "View all restaurants",
+                        modifier = Modifier.size(25.dp)
+                    )
                 }
             }
         }

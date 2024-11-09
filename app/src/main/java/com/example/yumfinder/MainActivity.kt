@@ -5,15 +5,17 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.yumfinder.ui.screen.ListScreen
+import com.example.yumfinder.ui.screen.your_visits.ListScreen
 import com.example.yumfinder.ui.screen.home.HomeScreen
+import com.example.yumfinder.ui.screen.login.LoginScreen
 import com.example.yumfinder.ui.theme.YumFinderTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -38,13 +40,21 @@ class MainActivity : ComponentActivity() {
 fun MainNavigation(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
-    startDestination: String = "HomeScreen"
+    startDestination: String = "LoginScreen"
 ){
     NavHost(
         modifier = modifier,
         navController = navController,
         startDestination = startDestination
     ) {
+        composable("LoginScreen") {
+            LoginScreen(
+                modifier = modifier,
+                onSuccessfulLogin = {
+                    navController.navigate("HomeScreen")
+                }
+            )
+        }
         composable("HomeScreen") {
             HomeScreen(
                 onListAction = {
@@ -62,3 +72,4 @@ fun MainNavigation(
 
     }
 }
+

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "98434052729",
+    "project_id": "apoleats-603c2",
+    "storage_bucket": "apoleats-603c2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:98434052729:android:9d522ef90f15afb4385aa8",
+        "android_client_info": {
+          "package_name": "com.example.yumfinder"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBAFzOPHdDDEkjtwg5Vsb62cJgX_XpDrlY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
