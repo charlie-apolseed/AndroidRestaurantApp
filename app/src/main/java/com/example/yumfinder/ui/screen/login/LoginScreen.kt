@@ -150,7 +150,7 @@ fun LoginScreen(
                                 painter = painterResource(
                                     id = if (showPassword) R.drawable.visible else R.drawable.invisible
                                 ),
-                                contentDescription = if (showPassword) "Hide Password" else "Show Password",
+                                contentDescription = if (showPassword) "Hide Password " else "Show Password",
                                 modifier = Modifier.size(24.dp)
                             )
                         }
