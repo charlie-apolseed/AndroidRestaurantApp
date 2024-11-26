@@ -5,16 +5,17 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.yumfinder.ui.screen.add_review.AddReviewScreen
+import com.example.yumfinder.ui.screen.all_reviews.AllReviewsScreen
 import com.example.yumfinder.ui.screen.your_visits.ListScreen
 import com.example.yumfinder.ui.screen.home.HomeScreen
+import com.example.yumfinder.ui.screen.inflated_review.ReviewScreen
 import com.example.yumfinder.ui.screen.login.LoginScreen
 import com.example.yumfinder.ui.theme.YumFinderTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -41,7 +42,7 @@ fun MainNavigation(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
     startDestination: String = "LoginScreen"
-){
+) {
     NavHost(
         modifier = modifier,
         navController = navController,
@@ -58,18 +59,55 @@ fun MainNavigation(
         composable("HomeScreen") {
             HomeScreen(
                 onListAction = {
-                    navController.navigate("ListScreen?addDialog=false") },
+                    navController.navigate("ListScreen?addDialog=false")
+                },
                 onAddAction = {
-                    navController.navigate("ListScreen?addDialog=true") }
+                    navController.navigate("AddScreen")
+                },
+                onAllReviewsAction = {
+                    navController.navigate("AllReviewsScreen?addDialog=false")
+                }
             )
         }
         composable("ListScreen?addDialog={addDialog}") {
             ListScreen(onHomeAction = {
                 navController.navigate("HomeScreen")
-            })
+            },
+                onEditAction = { itemId ->
+                    navController.navigate("ReviewScreen?itemId=$itemId")
+                }
+            )
         }
-
-
+        composable("AllReviewsScreen") {
+            AllReviewsScreen(
+                onHomeAction = {
+                    navController.navigate("HomeScreen")
+                },
+                onEditAction = { itemId ->
+                    navController.navigate("ReviewScreen?itemId=$itemId")
+                }
+            )
+        }
+        composable("ReviewScreen?itemId={itemId}") { itemId ->
+            ReviewScreen(
+                onHomeAction = {
+                    navController.navigate("HomeScreen")
+                },
+                onBackAction = {
+                    navController.popBackStack()
+                },
+            )
+        }
+        composable("AddScreen") {
+            AddReviewScreen(
+                onHomeAction = {
+                    navController.navigate("HomeScreen")
+                },
+                onBackAction = {
+                    navController.popBackStack()
+                }
+            )
+        }
     }
 }
 

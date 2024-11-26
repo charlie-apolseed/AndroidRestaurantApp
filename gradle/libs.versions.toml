@@ -18,7 +18,14 @@ googleGmsGoogleServices = "4.4.2"
 firebaseAuth = "23.1.0"
 tvMaterial = "1.0.0"
 
+accompanist="0.33.2-alpha"
+coil="2.1.0"
+mapsCompose="2.11.4"
+playServicesMaps="18.2.0"
+playServicesLocation = "21.3.0"
+
 [libraries]
+
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
@@ -46,6 +53,13 @@ hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hil
 hilt-gradle-plugin = { module = "com.google.dagger:hilt-android-gradle-plugin", version.ref = "hilt" }
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebaseAuth" }
 androidx-tv-material = { group = "androidx.tv", name = "tv-material", version.ref = "tvMaterial" }
+coil = {group = "com.google.accompanist", name = "accompanist-permissions", version.ref="accompanist"}
+accompanist = {group = "io.coil-kt", name = "coil-compose", version.ref="coil"}
+maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = "mapsCompose" }
+play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMaps" }
+play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
+
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

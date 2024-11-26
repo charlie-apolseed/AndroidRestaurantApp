@@ -15,17 +15,18 @@ interface RestaurantDAO {
     @Query("SELECT * FROM restaurant_table ORDER BY visited_date")
     fun getAllRestaurants() : Flow<List<RestaurantItem>>
 
+    @Query("SELECT * FROM restaurant_table ORDER BY visited_date DESC LIMIT 1")
+    fun getMostRecentRestaurant(): Flow<RestaurantItem?>
+
     @Query("SELECT * FROM restaurant_table WHERE restaurant_reviewer = :reviewer ORDER BY visited_date")
     fun getAllUserRestaurants(reviewer: String) : Flow<List<RestaurantItem>>
 
     @Query("SELECT * from restaurant_table WHERE id = :id")
-    fun getRestaurant(id: Int): Flow<RestaurantItem>
+    suspend fun getRestaurantById(id: Int): RestaurantItem
+
 
     @Query("SELECT COUNT(*) from restaurant_table")
     suspend fun getRestaurantsNum(): Int
-
-    @Query("SELECT COUNT(*) from restaurant_table WHERE restaurant_favorite = 1")
-    suspend fun getFavoriteRestaurantsNum(): Int
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(restaurant: RestaurantItem)

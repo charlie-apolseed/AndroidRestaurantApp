@@ -1,4 +1,4 @@
-package com.example.yumfinder.ui.screen.your_visits
+package com.example.yumfinder.ui.screen.all_reviews
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
@@ -60,22 +60,19 @@ import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.yumfinder.R
 import com.example.yumfinder.data.RestaurantItem
-import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
+import com.example.yumfinder.ui.screen.your_visits.ListModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ListScreen(
+fun AllReviewsScreen(
     modifier: Modifier = Modifier,
     viewModel: ListModel = hiltViewModel(),
     onHomeAction: () -> Unit,
     onEditAction: (Int) -> Unit
 ) {
 
-    val visitedRestaurants by viewModel.getAllUserRestaurants(
-        reviewer = Firebase.auth.currentUser?.email ?: "Unknown"
-    ).collectAsState(initial = emptyList())
+    val visitedRestaurants by viewModel.getAllRestaurants().collectAsState(initial = emptyList())
     var sortedRestaurants by remember { mutableStateOf(visitedRestaurants) }
     var searchQuery by rememberSaveable { mutableStateOf("") }
 
@@ -145,7 +142,7 @@ fun ListScreen(
                         Text(
                             modifier = Modifier.padding(bottom = 10.dp),
                             style = MaterialTheme.typography.bodySmall.copy(fontStyle = FontStyle.Italic),
-                            text = "Your Reviews"
+                            text = "All Reviews"
                         )
                     }
                 },
@@ -385,7 +382,7 @@ fun RestaurantCard(restaurant: RestaurantItem, modifier: Modifier, onEditAction:
         modifier = modifier
             .padding(vertical = 4.dp)
             .fillMaxWidth()
-            .clickable (onClick = { onEditAction(restaurant.id) })
+            .clickable { onEditAction(restaurant.id) }
     ) {
         Column(
             modifier = Modifier

@@ -42,6 +42,8 @@ class ListModel @Inject constructor(
 
     fun getAllUserRestaurants(reviewer: String) = restaurantDAO.getAllUserRestaurants(reviewer)
 
+    fun getAllRestaurants() = restaurantDAO.getAllRestaurants()
+
 
     fun addRestaurant(name: String, location: String, rating: String, notes: String) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -49,8 +51,12 @@ class ListModel @Inject constructor(
                 restaurantName = name,
                 restaurantAddress = location,
                 restaurantRating = rating,
+                restaurantFoodRating = rating.toFloat(),
+                restaurantVibesRating = rating.toFloat(),
+                restaurantStaffRating = rating.toFloat(),
+                restaurantLatitude = 0.0,
+                restaurantLongitude = 0.0,
                 restaurantNotes = notes,
-                restaurantFavorite = false,
                 restaurantImage = R.drawable.logo,
                 restaurantReviewer = Firebase.auth.currentUser?.email ?: "Unknown",
                 createdDate = Date(System.currentTimeMillis()).toString(),

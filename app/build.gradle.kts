@@ -75,6 +75,8 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    implementation(libs.coil)
+    implementation(libs.accompanist)
 
     // Room
     implementation(libs.androidx.navigation.compose)
@@ -89,5 +91,11 @@ dependencies {
     androidTestImplementation(libs.hilt.android.testing)
     // Hilt and Robolectric tests.
     testImplementation(libs.hilt.android.testing)
+    // Maps
+    implementation(libs.maps.compose)
+    implementation(libs.play.services.maps)
+    implementation(libs.play.services.location)
+    // Permission handling
+    implementation(libs.accompanist)
 
 }
