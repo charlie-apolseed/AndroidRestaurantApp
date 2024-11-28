@@ -219,43 +219,40 @@ fun AddReviewScreen(
                 properties = mapProperties,
                 onMapClick = {
                     viewmodel.markerPosition = it
+                    val geocoder = Geocoder(context, Locale.getDefault())
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        geocoder.getFromLocation(
+                            it.latitude,
+                            it.longitude,
+                            3,
+                            object : Geocoder.GeocodeListener {
+                                override fun onGeocode(addrs: MutableList<Address>) {
+                                    val addr =
+                                        "${addrs[0].getAddressLine(0)}, ${
+                                            addrs[0].getAddressLine(
+                                                1
+                                            )
+                                        }, ${addrs[0].getAddressLine(2)}"
+
+                                    geocodeText = addr
+                                }
+
+                                override fun onError(errorMessage: String?) {
+                                    geocodeText = errorMessage!!
+                                    super.onError(errorMessage)
+
+                                }
+                            }
+                        )
+                    }
                 }
             ) {
                 Marker(
                     state = MarkerState(position = viewmodel.markerPosition),
                     title = "Update location",
-                    snippet = "Lat, Lng: ${viewmodel.markerPosition.latitude}, ${viewmodel.markerPosition.longitude}",
-                    draggable = false,
+                    snippet = geocodeText,
                     alpha = 1f,
-                    onClick = {
-                        val geocoder = Geocoder(context, Locale.getDefault())
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                            geocoder.getFromLocation(
-                                it.position.latitude,
-                                it.position.longitude,
-                                3,
-                                object : Geocoder.GeocodeListener {
-                                    override fun onGeocode(addrs: MutableList<Address>) {
-                                        val addr =
-                                            "${addrs[0].getAddressLine(0)}, ${
-                                                addrs[0].getAddressLine(
-                                                    1
-                                                )
-                                            }, ${addrs[0].getAddressLine(2)}"
 
-                                        geocodeText = addr
-                                    }
-
-                                    override fun onError(errorMessage: String?) {
-                                        geocodeText = errorMessage!!
-                                        super.onError(errorMessage)
-
-                                    }
-                                }
-                            )
-                        }
-                        true
-                    }
                 )
 
             }
