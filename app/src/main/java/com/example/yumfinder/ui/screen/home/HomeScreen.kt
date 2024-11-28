@@ -1,5 +1,8 @@
 package com.example.yumfinder.ui.screen.home
 
+import android.location.Address
+import android.location.Geocoder
+import android.os.Build
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -62,7 +65,10 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapType
 import com.google.maps.android.compose.MapUiSettings
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -80,7 +86,10 @@ fun HomeScreen(
     val startLocation by remember {
         mutableStateOf(
             if (visitedRestaurants.isNotEmpty()) {
-                LatLng(visitedRestaurants[0].restaurantLatitude, visitedRestaurants[0].restaurantLongitude)
+                LatLng(
+                    visitedRestaurants[0].restaurantLatitude,
+                    visitedRestaurants[0].restaurantLongitude
+                )
             } else {
                 LatLng(41.3878, 2.1532) // Default location
             }
@@ -162,16 +171,29 @@ fun HomeScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
-            GoogleMap (
-                modifier  = Modifier
+            GoogleMap(
+                modifier = Modifier
                     .padding(top = 20.dp)
                     .background(color = MaterialTheme.colorScheme.primary)
                     .fillMaxWidth(0.9f)
                     .fillMaxHeight(.6f),
                 cameraPositionState = cameraState,
-                uiSettings= uiSettings,
+                uiSettings = uiSettings,
                 properties = mapProperties
-            )
+            ) {
+                for (review in visitedRestaurants) {
+                    Marker(
+                        state = MarkerState(
+                            position = LatLng(
+                                review.restaurantLatitude,
+                                review.restaurantLongitude
+                            )
+                        ),
+                        title = review.restaurantName,
+                        snippet = review.restaurantRating,
+                    )
+                }
+            }
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth(0.9f)

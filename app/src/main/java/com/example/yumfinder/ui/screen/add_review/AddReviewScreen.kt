@@ -1,6 +1,9 @@
 package com.example.yumfinder.ui.screen.add_review
 
 import android.Manifest
+import android.location.Address
+import android.location.Geocoder
+import android.os.Build
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -25,7 +28,9 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -70,7 +75,10 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapType
 import com.google.maps.android.compose.MapUiSettings
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
+import java.util.Locale
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
@@ -81,26 +89,13 @@ fun AddReviewScreen(
     onBackAction: () -> Unit,
     viewmodel: AddReviewModel = hiltViewModel()
 ) {
-    var newTitle by rememberSaveable { mutableStateOf("") }
-    var newTasteRating by rememberSaveable { mutableStateOf(0) }
-    var newVibesRating by rememberSaveable { mutableStateOf(0) }
-    var newStaffRating by rememberSaveable { mutableStateOf(0) }
-    var newPriceRating by rememberSaveable { mutableStateOf(0) }
-    var newNotes by rememberSaveable { mutableStateOf("") }
     //Map states
     val context = LocalContext.current
 
-    val visitedRestaurant by viewmodel.getMostRecentRestaurant().collectAsState(initial = null)
-    val startLocation by remember {
-        mutableStateOf(
-            if (visitedRestaurant != null) {
-                LatLng(visitedRestaurant!!.restaurantLatitude, visitedRestaurant!!.restaurantLongitude)
-            } else {
-                LatLng(41.3878, 2.1532) // Default location
-            }
-        )
+    val startLocation = viewmodel.newLocation.collectAsState().value
+    var geocodeText by rememberSaveable {
+        mutableStateOf("")
     }
-
 
 
     var cameraState = rememberCameraPositionState {
@@ -116,7 +111,7 @@ fun AddReviewScreen(
             )
         )
     }
-    var mapProperties by remember {
+    val mapProperties by remember {
         mutableStateOf(
             MapProperties(
                 mapType = MapType.NORMAL,
@@ -210,8 +205,8 @@ fun AddReviewScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 10.dp),
-                value = newTitle,
-                onValueChange = { newTitle = it },
+                value = viewmodel.newTitle,
+                onValueChange = { viewmodel.newTitle = it },
                 label = { Text("Name") }
             )
             GoogleMap(
@@ -221,7 +216,52 @@ fun AddReviewScreen(
                     .padding(top = 20.dp),
                 cameraPositionState = cameraState,
                 uiSettings= uiSettings,
-                properties = mapProperties
+                properties = mapProperties,
+                onMapClick = {
+                    viewmodel.markerPosition = it
+                }
+            ) {
+                Marker(
+                    state = MarkerState(position = viewmodel.markerPosition),
+                    title = "Update location",
+                    snippet = "Lat, Lng: ${viewmodel.markerPosition.latitude}, ${viewmodel.markerPosition.longitude}",
+                    draggable = false,
+                    alpha = 1f,
+                    onClick = {
+                        val geocoder = Geocoder(context, Locale.getDefault())
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            geocoder.getFromLocation(
+                                it.position.latitude,
+                                it.position.longitude,
+                                3,
+                                object : Geocoder.GeocodeListener {
+                                    override fun onGeocode(addrs: MutableList<Address>) {
+                                        val addr =
+                                            "${addrs[0].getAddressLine(0)}, ${
+                                                addrs[0].getAddressLine(
+                                                    1
+                                                )
+                                            }, ${addrs[0].getAddressLine(2)}"
+
+                                        geocodeText = addr
+                                    }
+
+                                    override fun onError(errorMessage: String?) {
+                                        geocodeText = errorMessage!!
+                                        super.onError(errorMessage)
+
+                                    }
+                                }
+                            )
+                        }
+                        true
+                    }
+                )
+
+            }
+            HorizontalDivider(
+                modifier = Modifier.padding(top = 6.dp),
+                thickness = 1.dp
             )
 
             // LazyColumn for Ratings and Notes
@@ -254,7 +294,7 @@ fun AddReviewScreen(
                             for (i in 1..10) {
                                 TextButton(
                                     onClick = {
-                                        newTasteRating = i
+                                        viewmodel.newTasteRating = i
                                     },
                                     contentPadding =
                                     if (i == 10) {
@@ -275,7 +315,7 @@ fun AddReviewScreen(
 
 
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = if (i == newTasteRating) {
+                                        containerColor = if (i == viewmodel.newTasteRating) {
                                             MaterialTheme.colorScheme.onTertiary // Highlighted color
                                         } else {
                                             MaterialTheme.colorScheme.tertiary // Default color
@@ -338,7 +378,7 @@ fun AddReviewScreen(
                             for (i in 1..10) {
                                 TextButton(
                                     onClick = {
-                                        newVibesRating = i
+                                        viewmodel.newVibesRating = i
                                     },
                                     contentPadding =
                                     if (i == 10) {
@@ -359,7 +399,7 @@ fun AddReviewScreen(
 
 
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = if (i == newVibesRating) {
+                                        containerColor = if (i == viewmodel.newVibesRating) {
                                             MaterialTheme.colorScheme.onTertiary // Highlighted color
                                         } else {
                                             MaterialTheme.colorScheme.tertiary // Default color
@@ -419,7 +459,7 @@ fun AddReviewScreen(
                             for (i in 1..10) {
                                 TextButton(
                                     onClick = {
-                                        newStaffRating = i
+                                        viewmodel.newStaffRating = i
                                     },
                                     contentPadding =
                                     if (i == 10) {
@@ -440,7 +480,7 @@ fun AddReviewScreen(
 
 
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = if (i == newStaffRating) {
+                                        containerColor = if (i == viewmodel.newStaffRating) {
                                             MaterialTheme.colorScheme.onTertiary // Highlighted color
                                         } else {
                                             MaterialTheme.colorScheme.tertiary // Default color
@@ -500,7 +540,7 @@ fun AddReviewScreen(
                             for (i in 1..5) {
                                 TextButton(
                                     onClick = {
-                                        newPriceRating = i
+                                        viewmodel.newPriceRating = i
                                     },
                                     contentPadding =
                                     if (i == 5) {
@@ -521,7 +561,7 @@ fun AddReviewScreen(
 
 
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = if (i == newPriceRating) {
+                                        containerColor = if (i == viewmodel.newPriceRating) {
                                             MaterialTheme.colorScheme.onTertiary // Highlighted color
                                         } else {
                                             MaterialTheme.colorScheme.tertiary // Default color
@@ -644,8 +684,8 @@ fun AddReviewScreen(
                             errorIndicatorColor = Color.Transparent // Transparent line in error state
                         ),
                         shape = RoundedCornerShape(16.dp), // Adds rounded corners
-                        value = newNotes,
-                        onValueChange = { newNotes = it },
+                        value = viewmodel.newNotes,
+                        onValueChange = { viewmodel.newNotes = it },
                         placeholder = { Text("Type to enter...") } // Placeholder text
                     )
                 }
