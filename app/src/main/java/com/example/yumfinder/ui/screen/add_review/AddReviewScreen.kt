@@ -1,20 +1,15 @@
 package com.example.yumfinder.ui.screen.add_review
 
-import android.Manifest
+
 import android.location.Address
 import android.location.Geocoder
 import android.os.Build
-import android.util.Log
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.interaction.MutableInteractionSource
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -28,7 +23,6 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -39,9 +33,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.TextFieldDefaults.indicatorLine
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -55,7 +47,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
@@ -64,12 +55,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.yumfinder.R
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.isGranted
-import com.google.accompanist.permissions.rememberPermissionState
-import com.google.accompanist.permissions.shouldShowRationale
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
@@ -91,10 +78,9 @@ fun AddReviewScreen(
 ) {
     //Map states
     val context = LocalContext.current
-
     val startLocation = viewmodel.newLocation.collectAsState().value
     var geocodeText by rememberSaveable {
-        mutableStateOf("")
+        mutableStateOf("Click to set address")
     }
 
 
@@ -228,11 +214,7 @@ fun AddReviewScreen(
                             object : Geocoder.GeocodeListener {
                                 override fun onGeocode(addrs: MutableList<Address>) {
                                     val addr =
-                                        "${addrs[0].getAddressLine(0)}, ${
-                                            addrs[0].getAddressLine(
-                                                1
-                                            )
-                                        }, ${addrs[0].getAddressLine(2)}"
+                                        addrs[0].getAddressLine(0)
 
                                     geocodeText = addr
                                 }
@@ -249,13 +231,12 @@ fun AddReviewScreen(
             ) {
                 Marker(
                     state = MarkerState(position = viewmodel.markerPosition),
-                    title = "Update location",
-                    snippet = geocodeText,
+                    title = viewmodel.newTitle,
                     alpha = 1f,
-
                 )
 
             }
+            Text(text = geocodeText, color = Color.Black)
             HorizontalDivider(
                 modifier = Modifier.padding(top = 6.dp),
                 thickness = 1.dp
