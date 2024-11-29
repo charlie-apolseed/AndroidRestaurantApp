@@ -46,6 +46,7 @@ class AddReviewModel @Inject constructor(
     private val defaultLocation = LatLng(41.3878, 2.1532) // Default location
     private val _newLocation = MutableStateFlow(defaultLocation)
     var newLocation: StateFlow<LatLng> = _newLocation
+    var locationConfirmed by mutableStateOf(false)
 
     var newTitle by  mutableStateOf("")
     var newTasteRating by mutableStateOf(0)
@@ -58,7 +59,8 @@ class AddReviewModel @Inject constructor(
     var markerPosition by mutableStateOf(LatLng(0.0, 0.0))
 
 
-    fun updateLocation() {
+    fun confirmNewLocation() {
+        locationConfirmed = true
         _newLocation.update{ markerPosition}
     }
 

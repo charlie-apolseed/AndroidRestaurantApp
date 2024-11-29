@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -50,12 +51,14 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.yumfinder.R
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.maps.android.compose.GoogleMap
@@ -78,7 +81,7 @@ fun AddReviewScreen(
 ) {
     //Map states
     val context = LocalContext.current
-    val startLocation = viewmodel.newLocation.collectAsState().value
+    val newLocation by viewmodel.newLocation.collectAsState()
     var geocodeText by rememberSaveable {
         mutableStateOf("Click to set address")
     }
@@ -86,7 +89,7 @@ fun AddReviewScreen(
 
     var cameraState = rememberCameraPositionState {
         CameraPosition.fromLatLngZoom(
-          startLocation, 18f
+            newLocation, 18f
         )
     }
     var uiSettings by remember {
@@ -104,7 +107,7 @@ fun AddReviewScreen(
                 isTrafficEnabled = false,
                 mapStyleOptions = MapStyleOptions.loadRawResourceStyle(
                     context, R.raw.mymapstyle
-               )
+                )
             )
         )
     }
@@ -112,7 +115,7 @@ fun AddReviewScreen(
     LaunchedEffect(Unit) {
         cameraState.animate(
             CameraUpdateFactory.newCameraPosition(
-                CameraPosition(startLocation, 15f, 0f, 0f)
+                CameraPosition(newLocation, 15f, 0f, 0f)
             )
         )
     }
@@ -197,13 +200,14 @@ fun AddReviewScreen(
             )
             GoogleMap(
                 modifier = Modifier
-                    .height(400.dp)
+                    .height(350.dp)
                     .fillMaxWidth()
                     .padding(top = 20.dp),
                 cameraPositionState = cameraState,
-                uiSettings= uiSettings,
+                uiSettings = uiSettings,
                 properties = mapProperties,
                 onMapClick = {
+                    viewmodel.locationConfirmed = false
                     viewmodel.markerPosition = it
                     val geocoder = Geocoder(context, Locale.getDefault())
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -234,9 +238,61 @@ fun AddReviewScreen(
                     title = viewmodel.newTitle,
                     alpha = 1f,
                 )
-
+                if (!viewmodel.locationConfirmed) {
+                    Marker(
+                        state = MarkerState(position = newLocation),
+                        title = viewmodel.newTitle,
+                        icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA),
+                        alpha = 1f,
+                    )
+                } else {
+                    Marker(
+                        state = MarkerState(position = newLocation),
+                        title = "Current location",
+                        icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA),
+                        alpha = 1f,
+                    )
+                }
             }
-            Text(text = geocodeText, color = Color.Black)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 5.dp)
+                    .height(70.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
+                Text(
+                    text = geocodeText, color = Color.Black,
+                    fontWeight = if (viewmodel.locationConfirmed) FontWeight.Bold else FontWeight.Normal,
+                    modifier = Modifier.fillMaxWidth(.6f)
+                )
+                Button(
+                    onClick = {
+                        viewmodel.confirmNewLocation()
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth(.9f)
+                        .padding(vertical = 10.dp)
+                        .fillMaxHeight()
+                    ,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        contentColor = MaterialTheme.colorScheme.onSurface
+                    ),
+                    shape = RoundedCornerShape(8.dp),
+                    elevation = ButtonDefaults.buttonElevation(
+                        defaultElevation = 5.dp
+                    )
+                ) {
+                    Text(
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight(600),
+                        text = "Confirm"
+                    )
+                }
+            }
+
             HorizontalDivider(
                 modifier = Modifier.padding(top = 6.dp),
                 thickness = 1.dp
@@ -669,8 +725,17 @@ fun AddReviewScreen(
                 }
                 item {
                     Button(
-                        modifier = modifier.fillMaxWidth().padding(bottom = 20.dp),
-                        shape = RoundedCornerShape(16.dp),
+                        modifier = modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 20.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            contentColor = MaterialTheme.colorScheme.onSurface
+                        ),
+                        shape = RoundedCornerShape(8.dp),
+                        elevation = ButtonDefaults.buttonElevation(
+                            defaultElevation = 5.dp
+                        ),
                         onClick = { /*Submit review*/ }
                     ) {
                         Text("Submit Review")
