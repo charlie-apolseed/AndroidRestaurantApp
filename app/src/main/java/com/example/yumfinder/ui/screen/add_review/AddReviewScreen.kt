@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -31,6 +32,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -42,7 +47,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,8 +57,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.yumfinder.R
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -68,6 +75,7 @@ import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
+import kotlinx.coroutines.launch
 import java.util.Locale
 
 
@@ -79,27 +87,28 @@ fun AddReviewScreen(
     onBackAction: () -> Unit,
     viewmodel: AddReviewModel = hiltViewModel()
 ) {
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+    var titleError by remember { mutableStateOf(false) }
+    var ratingError by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
     //Map states
     val context = LocalContext.current
     val newLocation by viewmodel.newLocation.collectAsState()
-    var geocodeText by rememberSaveable {
-        mutableStateOf("Click to set address")
-    }
 
 
-    var cameraState = rememberCameraPositionState {
+    val cameraState = rememberCameraPositionState {
         CameraPosition.fromLatLngZoom(
             newLocation, 18f
         )
     }
-    var uiSettings by remember {
-        mutableStateOf(
-            MapUiSettings(
-                zoomControlsEnabled = true,
-                zoomGesturesEnabled = true,
-            )
+    val uiSettings =
+        MapUiSettings(
+            zoomControlsEnabled = true,
+            zoomGesturesEnabled = true,
         )
-    }
+
+
     val mapProperties by remember {
         mutableStateOf(
             MapProperties(
@@ -112,10 +121,10 @@ fun AddReviewScreen(
         )
     }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(newLocation) {
         cameraState.animate(
             CameraUpdateFactory.newCameraPosition(
-                CameraPosition(newLocation, 15f, 0f, 0f)
+                CameraPosition(newLocation, 16f, 0f, 0f)
             )
         )
     }
@@ -123,6 +132,9 @@ fun AddReviewScreen(
 
 
     Scaffold(
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        },
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
@@ -195,7 +207,12 @@ fun AddReviewScreen(
                     .fillMaxWidth()
                     .padding(top = 10.dp),
                 value = viewmodel.newTitle,
-                onValueChange = { viewmodel.newTitle = it },
+                onValueChange = {
+                    titleError = viewmodel.newTitle.isEmpty()
+                    viewmodel.newTitle = it
+                },
+                singleLine = true,
+                isError = titleError,
                 label = { Text("Name") }
             )
             GoogleMap(
@@ -220,11 +237,11 @@ fun AddReviewScreen(
                                     val addr =
                                         addrs[0].getAddressLine(0)
 
-                                    geocodeText = addr
+                                    viewmodel.geocodeText = addr
                                 }
 
                                 override fun onError(errorMessage: String?) {
-                                    geocodeText = errorMessage!!
+                                    viewmodel.geocodeText = errorMessage!!
                                     super.onError(errorMessage)
 
                                 }
@@ -263,9 +280,9 @@ fun AddReviewScreen(
                 verticalAlignment = Alignment.Top
             ) {
                 Text(
-                    text = geocodeText, color = Color.Black,
+                    text = viewmodel.geocodeText, color = Color.Black,
                     fontWeight = if (viewmodel.locationConfirmed) FontWeight.Bold else FontWeight.Normal,
-                    modifier = Modifier.fillMaxWidth(.6f)
+                    modifier = Modifier.fillMaxWidth(.55f)
                 )
                 Button(
                     onClick = {
@@ -274,10 +291,12 @@ fun AddReviewScreen(
                     modifier = Modifier
                         .fillMaxWidth(.9f)
                         .padding(vertical = 10.dp)
-                        .fillMaxHeight()
-                    ,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
+                        .fillMaxHeight(),
+                    colors = if (viewmodel.locationConfirmed) ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.onTertiary,
+                        contentColor = MaterialTheme.colorScheme.onSurface
+                    ) else ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.tertiary,
                         contentColor = MaterialTheme.colorScheme.onSurface
                     ),
                     shape = RoundedCornerShape(8.dp),
@@ -286,9 +305,9 @@ fun AddReviewScreen(
                     )
                 ) {
                     Text(
-                        fontSize = 18.sp,
+                        fontSize = 16.sp,
                         fontWeight = FontWeight(600),
-                        text = "Confirm"
+                        text = "Set Address"
                     )
                 }
             }
@@ -389,8 +408,6 @@ fun AddReviewScreen(
                     }
 
                 }
-
-
                 // Vibes
                 item {
                     Column(
@@ -693,7 +710,6 @@ fun AddReviewScreen(
 
                     }
                 }
-
                 // Notes
                 item {
                     Text(
@@ -709,7 +725,7 @@ fun AddReviewScreen(
                     TextField(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(150.dp),
+                            .height(100.dp),
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = MaterialTheme.colorScheme.onTertiary, // Background when focused
                             unfocusedContainerColor = MaterialTheme.colorScheme.tertiary, // Background when unfocused
@@ -723,26 +739,126 @@ fun AddReviewScreen(
                         placeholder = { Text("Type to enter...") } // Placeholder text
                     )
                 }
+                // Submit Button
                 item {
                     Button(
                         modifier = modifier
                             .fillMaxWidth()
-                            .padding(bottom = 20.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.surface,
-                            contentColor = MaterialTheme.colorScheme.onSurface
-                        ),
+                            .padding(bottom = 10.dp),
                         shape = RoundedCornerShape(8.dp),
                         elevation = ButtonDefaults.buttonElevation(
                             defaultElevation = 5.dp
                         ),
-                        onClick = { /*Submit review*/ }
+                        onClick = {
+                            var submissionError = false
+                            if (viewmodel.newTitle.isEmpty()) {
+                                submissionError = true
+                                titleError = true
+                            }
+                            if (viewmodel.newTasteRating == 0 || viewmodel.newVibesRating == 0 || viewmodel.newStaffRating == 0 || viewmodel.newPriceRating == 0) {
+                                submissionError = true
+                                ratingError = true
+                            }
+                            if (!submissionError) {
+                                viewmodel.addReview()
+                                onBackAction()
+                            } else {
+                                scope.launch {
+                                    snackbarHostState.showSnackbar(
+                                        message = "Review requires title and complete rating",
+                                        duration = SnackbarDuration.Short
+                                    )
+                                }
+                            }
+                        }
                     ) {
                         Text("Submit Review")
                     }
+                    if (viewmodel.existingRestaurant != null) {
+                        TextButton(onClick = { showDeleteDialog = true }) {
+                            Text(
+                                text = "Delete Review",
+                                fontSize = 20.sp,
+                                textDecoration = TextDecoration.Underline
+                            )
+                        }
+                    }
+                }
+            }
+
+
+            if (showDeleteDialog) {
+                Dialog(onDismissRequest = {
+                    showDeleteDialog = false
+                }) {
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight(),
+                        shape = RoundedCornerShape(size = 6.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 20.dp),
+                                text = "Are you sure you want to delete this review?",
+                                color = Color.Black
+                            )
+                            Row(
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Button(
+                                    onClick = {
+                                        viewmodel.deleteReview()
+                                        onBackAction()
+                                    },
+                                    modifier = Modifier
+                                        .padding(horizontal = 10.dp),
+                                    shape = RoundedCornerShape(8.dp),
+                                    elevation = ButtonDefaults.buttonElevation(
+                                        defaultElevation = 5.dp
+                                    )
+                                ) {
+                                    Text(
+                                        modifier = Modifier.padding(vertical = 8.dp),
+                                        fontSize = 20.sp,
+                                        fontWeight = FontWeight(600),
+                                        text = "Delete"
+                                    )
+                                }
+                                Button(
+                                    onClick = {
+                                        showDeleteDialog = false
+                                    },
+                                    modifier = Modifier
+                                        .padding(horizontal = 10.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.tertiary,
+                                        contentColor = MaterialTheme.colorScheme.onSurface
+                                    ),
+                                    shape = RoundedCornerShape(8.dp),
+                                    elevation = ButtonDefaults.buttonElevation(
+                                        defaultElevation = 5.dp
+                                    )
+                                ) {
+                                    Text(
+                                        modifier = Modifier.padding(vertical = 8.dp),
+                                        fontSize = 20.sp,
+                                        fontWeight = FontWeight(600),
+                                        text = "Cancel"
+                                    )
+                                }
+                            }
+                        }
+                    }
+
                 }
             }
         }
+
     }
 }
 

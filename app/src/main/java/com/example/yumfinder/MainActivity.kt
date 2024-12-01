@@ -69,12 +69,15 @@ fun MainNavigation(
                 }
             )
         }
-        composable("ListScreen?addDialog={addDialog}") {
+        composable("ListScreen") {
             ListScreen(onHomeAction = {
                 navController.navigate("HomeScreen")
             },
                 onEditAction = { itemId ->
-                    navController.navigate("ReviewScreen?itemId=$itemId")
+                    navController.navigate("AddScreen?itemId=$itemId")
+                },
+                onAddAction = {
+                    navController.navigate("AddScreen")
                 }
             )
         }
@@ -84,7 +87,10 @@ fun MainNavigation(
                     navController.navigate("HomeScreen")
                 },
                 onEditAction = { itemId ->
-                    navController.navigate("ReviewScreen?itemId=$itemId")
+                    navController.navigate("AddScreen?itemId=$itemId")
+                },
+                onAddAction = {
+                    navController.navigate("AddScreen")
                 }
             )
         }
@@ -98,7 +104,7 @@ fun MainNavigation(
                 },
             )
         }
-        composable("AddScreen") {
+        composable("AddScreen?itemId={itemId}") { itemId ->
             AddReviewScreen(
                 onHomeAction = {
                     navController.navigate("HomeScreen")

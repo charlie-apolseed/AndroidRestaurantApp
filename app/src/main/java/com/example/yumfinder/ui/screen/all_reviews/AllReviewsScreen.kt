@@ -14,12 +14,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -35,7 +33,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
+
 import androidx.compose.material3.Text
 
 import androidx.compose.material3.TopAppBarDefaults
@@ -49,14 +47,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.yumfinder.R
 import com.example.yumfinder.data.RestaurantItem
@@ -69,7 +66,8 @@ fun AllReviewsScreen(
     modifier: Modifier = Modifier,
     viewModel: ListModel = hiltViewModel(),
     onHomeAction: () -> Unit,
-    onEditAction: (Int) -> Unit
+    onEditAction: (Int) -> Unit,
+    onAddAction: () -> Unit
 ) {
 
     val visitedRestaurants by viewModel.getAllRestaurants().collectAsState(initial = emptyList())
@@ -328,7 +326,7 @@ fun AllReviewsScreen(
                     .padding(top = 10.dp)
                     .fillMaxWidth(0.9f)
                     .height(62.dp),
-                onClick = { viewModel.toggleAddDialog() },
+                onClick = { onAddAction() },
                 shape = RoundedCornerShape(16.dp)
             )
             {
@@ -337,11 +335,6 @@ fun AllReviewsScreen(
 
 
             // Open dialog for adding new restaurant
-            if (viewModel.showAddDialog) {
-                AddRestaurantDialog(viewModel) {
-                    viewModel.toggleAddDialog()
-                }
-            }
         }
     }
 
@@ -447,98 +440,3 @@ fun RestaurantCard(restaurant: RestaurantItem, modifier: Modifier, onEditAction:
 }
 
 
-@Composable
-fun AddRestaurantDialog(
-    viewModel: ListModel,
-    onCancel: () -> Unit
-) {
-    var newRestaurantName by remember { mutableStateOf("") }
-    var newRestaurantLocation by remember { mutableStateOf("") }
-    var newRestaurantRating by remember { mutableStateOf("") }
-    var newRestaurantNotes by remember { mutableStateOf("") }
-    var dialogErrorText by remember { mutableStateOf(false) }
-
-    Dialog(onDismissRequest = onCancel) {
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight(),
-            shape = RoundedCornerShape(size = 6.dp),
-        ) {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(.9f),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = "Restaurant Review",
-                        modifier = Modifier.padding(8.dp),
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = Color.Black
-                    )
-                    IconButton(onClick = onCancel) {
-                        Icon(
-                            Icons.Filled.Close,
-                            contentDescription = "Exit",
-                            modifier = Modifier.size(32.dp),
-                            tint = Color.Black
-                        )
-                    }
-                }
-
-
-                OutlinedTextField(
-                    value = newRestaurantName,
-                    onValueChange = { newRestaurantName = it },
-                    label = { Text("Name") }
-                )
-                OutlinedTextField(
-                    value = newRestaurantLocation,
-                    onValueChange = { newRestaurantLocation = it },
-                    label = { Text("Location") }
-                )
-                OutlinedTextField(
-                    value = newRestaurantRating,
-                    onValueChange = { newRestaurantRating = it },
-                    label = { Text("Rating (1-10)") }
-                )
-                OutlinedTextField(
-                    modifier = Modifier.fillMaxWidth(.88f),
-                    value = newRestaurantNotes,
-                    onValueChange = { newRestaurantNotes = it },
-                    label = { Text("Notes") }
-                )
-                if (dialogErrorText) {
-                    Text(
-                        text = "Please fill in all fields",
-                        color = MaterialTheme.colorScheme.error
-                    )
-                }
-                Button(modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    onClick = {
-                        if (newRestaurantName.isNotBlank() && newRestaurantLocation.isNotBlank() && newRestaurantRating.isNotBlank()) {
-                            viewModel.addRestaurant(
-                                newRestaurantName,
-                                newRestaurantLocation,
-                                newRestaurantRating,
-                                newRestaurantNotes
-                            )
-                            onCancel()
-                        } else {
-                            dialogErrorText = true
-                        }
-                    }
-                ) {
-                    Text(text = "Confirm", style = MaterialTheme.typography.labelMedium)
-                }
-            }
-
-        }
-    }
-}

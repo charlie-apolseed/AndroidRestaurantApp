@@ -16,7 +16,7 @@ interface RestaurantDAO {
     fun getAllRestaurants() : Flow<List<RestaurantItem>>
 
     @Query("SELECT * FROM restaurant_table ORDER BY visited_date DESC LIMIT 1")
-    fun getMostRecentRestaurant(): Flow<RestaurantItem?>
+    fun getMostRecentRestaurant(): RestaurantItem
 
     @Query("SELECT * FROM restaurant_table WHERE restaurant_reviewer = :reviewer ORDER BY visited_date")
     fun getAllUserRestaurants(reviewer: String) : Flow<List<RestaurantItem>>
