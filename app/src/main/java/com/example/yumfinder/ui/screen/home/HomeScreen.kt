@@ -77,7 +77,8 @@ fun HomeScreen(
     viewModel: HomeScreenModel = hiltViewModel(),
     onListAction: () -> Unit,
     onAddAction: () -> Unit,
-    onAllReviewsAction: () -> Unit
+    onAllReviewsAction: () -> Unit,
+    onAIRecommendationAction: () -> Unit
 ) {
     val visitedRestaurants by viewModel.getAllRestaurants().collectAsState(initial = emptyList())
 
@@ -271,12 +272,46 @@ fun HomeScreen(
                 }
             }
 
+            Button(
+                modifier = Modifier
+                    .padding(top = 15.dp)
+                    .fillMaxWidth(.9f)
+                    .height(50.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    contentColor = MaterialTheme.colorScheme.onSurface
+                ),
+                shape = RoundedCornerShape(8.dp),
+                elevation = ButtonDefaults.buttonElevation(
+                    defaultElevation = 5.dp
+                ),
+                onClick = {
+                    onAIRecommendationAction()
+                }
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight(600),
+                        text = "AI Recommendation"
+                    )
+                    Image(
+                        painter = painterResource(id = R.drawable.suggestion),
+                        contentDescription = "Recommendation",
+                        modifier = Modifier.size(25.dp)
+                    )
+                }
+            }
+
             Column(
                 modifier = Modifier
                     .fillMaxWidth(0.9f)
                     .padding(top = 20.dp)
                     .heightIn(200.dp)
-
                     .clickable { onAllReviewsAction() },
             ) {
                 Text(

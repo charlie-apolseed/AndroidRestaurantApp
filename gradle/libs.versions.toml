@@ -23,6 +23,8 @@ coil="2.1.0"
 mapsCompose="2.11.4"
 playServicesMaps="18.2.0"
 playServicesLocation = "21.3.0"
+generativeai = "0.9.0"
+media3CommonKtx = "1.5.0"
 
 [libraries]
 
@@ -58,6 +60,8 @@ accompanist = {group = "io.coil-kt", name = "coil-compose", version.ref="coil"}
 maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = "mapsCompose" }
 play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMaps" }
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
+generativeai = { group = "com.google.ai.client.generativeai", name = "generativeai", version.ref = "generativeai" }
+androidx-media3-common-ktx = { group = "androidx.media3", name = "media3-common-ktx", version.ref = "media3CommonKtx" }
 
 
 

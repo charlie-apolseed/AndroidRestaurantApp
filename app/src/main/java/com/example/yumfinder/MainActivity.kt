@@ -15,8 +15,8 @@ import com.example.yumfinder.ui.screen.add_review.AddReviewScreen
 import com.example.yumfinder.ui.screen.all_reviews.AllReviewsScreen
 import com.example.yumfinder.ui.screen.your_visits.ListScreen
 import com.example.yumfinder.ui.screen.home.HomeScreen
-import com.example.yumfinder.ui.screen.inflated_review.ReviewScreen
 import com.example.yumfinder.ui.screen.login.LoginScreen
+import com.example.yumfinder.ui.screen.recommendation.AIRecommendationScreen
 import com.example.yumfinder.ui.theme.YumFinderTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -66,6 +66,9 @@ fun MainNavigation(
                 },
                 onAllReviewsAction = {
                     navController.navigate("AllReviewsScreen?addDialog=false")
+                },
+                onAIRecommendationAction = {
+                    navController.navigate("AIRecommendation")
                 }
             )
         }
@@ -94,18 +97,18 @@ fun MainNavigation(
                 }
             )
         }
-        composable("ReviewScreen?itemId={itemId}") { itemId ->
-            ReviewScreen(
+        composable("AddScreen?itemId={itemId}") { itemId ->
+            AddReviewScreen(
                 onHomeAction = {
                     navController.navigate("HomeScreen")
                 },
                 onBackAction = {
                     navController.popBackStack()
-                },
+                }
             )
         }
-        composable("AddScreen?itemId={itemId}") { itemId ->
-            AddReviewScreen(
+        composable("AIRecommendation") {
+            AIRecommendationScreen(
                 onHomeAction = {
                     navController.navigate("HomeScreen")
                 },
