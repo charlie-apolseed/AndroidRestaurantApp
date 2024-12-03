@@ -310,7 +310,7 @@ fun HomeScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth(0.9f)
-                    .padding(top = 20.dp)
+                    .padding(top = 15.dp)
                     .heightIn(200.dp)
                     .clickable { onAllReviewsAction() },
             ) {

@@ -1,6 +1,7 @@
 package com.example.yumfinder.ui.screen.recommendation
 
 import android.util.Log
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -22,7 +23,15 @@ class AIRecommendationModel @Inject constructor(
     private val restaurantDAO: RestaurantDAO
 ) : ViewModel() {
     private val _visitedRestaurants = MutableStateFlow<List<RestaurantItem>>(emptyList())
-    val visitedRestaurants = _visitedRestaurants.asStateFlow()
+
+
+    private val _textGenerationResult = MutableStateFlow<String?>(null)
+    val textGenerationResult = _textGenerationResult.asStateFlow()
+
+    var headerText by mutableStateOf("Good morning, User") //TODO get the accurate time of day and add user name
+    var button1Text by mutableStateOf("Recommendations")
+    var button2Text by mutableStateOf("Reviews Summary")
+    var button3Text by mutableStateOf("Best Nearby")
 
     init {
         fetchRestaurants()
@@ -51,16 +60,14 @@ class AIRecommendationModel @Inject constructor(
         apiKey = "AIzaSyCPa_DY0AqC1ilZJiL2mr845kleSSiZbLI"
     )
 
-    private val _textGenerationResult = MutableStateFlow<String?>(null)
-    val textGenerationResult = _textGenerationResult.asStateFlow()
-
     fun getAIRecommendation() {
         val prompt = buildPrompt()
         _textGenerationResult.value = "Generating..."
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val result = generativeModel.generateContent(prompt)
-                _textGenerationResult.value = result.text
+                val generatedText = result.text
+                _textGenerationResult.value = generatedText
             } catch (e: Exception) {
                 _textGenerationResult.value = "Error: ${e.message}"
             }
