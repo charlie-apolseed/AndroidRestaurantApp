@@ -1,8 +1,6 @@
 package com.example.yumfinder.ui.screen.recommendation
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,14 +21,12 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CardElevation
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -124,7 +120,7 @@ fun AIRecommendationScreen(
         ) {
             Text(
                 modifier = Modifier.padding(vertical = 15.dp),
-                fontSize = 25.sp,
+                fontSize = 22.sp,
                 fontWeight = FontWeight(700),
                 text = viewmodel.headerText,
                 color = Color.Black
@@ -203,7 +199,7 @@ fun AIRecommendationScreen(
                     ),
                     shape = RoundedCornerShape(8.dp),
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 5.dp),
-                    onClick = { viewmodel.getAIRecommendation() }
+                    onClick = { viewmodel.getAIRecommendation("Recommendation") }
                 ) {
                     Text(text = viewmodel.button1Text, fontSize = 15.sp)
                 }
@@ -219,7 +215,7 @@ fun AIRecommendationScreen(
                     ),
                     shape = RoundedCornerShape(8.dp),
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 5.dp),
-                    onClick = { viewmodel.getAIRecommendation() }
+                    onClick = { viewmodel.getAIRecommendation("Reviews") }
                 ) {
                     Text(text = viewmodel.button2Text, fontSize = 15.sp)
                 }
@@ -235,7 +231,7 @@ fun AIRecommendationScreen(
                     ),
                     shape = RoundedCornerShape(8.dp),
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 5.dp),
-                    onClick = { viewmodel.getAIRecommendation() }
+                    onClick = { viewmodel.getAIRecommendation("Best Nearby") }
                 ) {
                     Text(text = viewmodel.button3Text, fontSize = 15.sp)
                 }
