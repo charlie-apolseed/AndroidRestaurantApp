@@ -4,7 +4,7 @@ Welcome to **ApolEats**, an Android app designed for food lovers who want an ad-
 
 ## Inspiration
 
-> The only thing that makes me happier in this world than food is sharing food with friends. I created this app to make it easier to find and share restaurants among my friends. With services like Google Maps and TripAdvisor being riddled with advertisements and reviewers with objectively terrible tastes, a product like this felt invaluable.
+> The only thing that makes me happier in this world than food is sharing it with friends. I created this app to make it easier to find and share restaurants with others. With services like Google Maps and TripAdvisor being riddled with advertisements and reviewers with objectively terrible tastes, a product like this felt invaluable.
 
 In essence, ApolEats is all about fostering genuine connections over good food, providing a platform where friends can trust each other’s recommendations without sifting through paid reviews or dealing with questionable opinions.
 
@@ -12,8 +12,9 @@ In essence, ApolEats is all about fostering genuine connections over good food, 
 
 - **User Authentication**: Seamlessly log in and sign up through Firebase Authentication.
 - **Restaurant Discovery**: View and explore restaurants shared within your friends’ network.
-- **Google Maps Integration**: Coming soon! Utilize the Google Maps API to find restaurant locations and directions.
+- **Google Maps Integration**: Utilize the Google Maps API to visualize restaurant locations.
 - **Personalized Recommendations**: Enjoy recommendations from friends you trust, not strangers or paid advertisers.
+- **AI Features**: Leverage the power of generative AI to get new recommendations and summaries of your visits.
 - **Modern UI**: Built with Jetpack Compose, the app provides a smooth, intuitive user experience.
 
 ## Tech Stack
@@ -21,15 +22,8 @@ In essence, ApolEats is all about fostering genuine connections over good food, 
 - **Language**: Kotlin
 - **UI**: Jetpack Compose
 - **Backend Services**: Firebase Authentication and Firestore Database
-- **Maps Integration**: Google Maps API (in development)
-
-## Roadmap
-
-- [ ] Integrate Google Maps API for real-time location-based restaurant search
-- [ ] Implement friend-to-friend recommendations and sharing
-- [ ] Add personalized favorites and bookmark functionality
-- [ ] Enhance filtering options (e.g., cuisine type, price range, etc.)
-- [ ] Additional features based on user feedback
+- **Maps Integration**: Google Maps API
+- **Google Gemini**: AI powered features
 
 ## Getting Started
 
@@ -41,7 +35,8 @@ To run this project locally:
    cd ApolEats
 2. Set up a Firebase project and add the google-services.json file to the app/ directory.
 3. Add your Google Maps API key to local.properties or directly in the manifest file.
-4. Build and run the project using Android Studio.
+4. In AIRecommendationModel, replace the generativeModel API key with your own. 
+5. Build and run the project using Android Studio.
 
 License
 
