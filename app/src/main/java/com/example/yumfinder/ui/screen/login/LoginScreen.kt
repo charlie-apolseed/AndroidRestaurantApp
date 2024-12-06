@@ -207,7 +207,7 @@ fun LoginScreen(
                     is LoginUiState.Loading -> CircularProgressIndicator()
                     is LoginUiState.RegisterSuccess -> Text("Register OK", color = Color.Green)
                     is LoginUiState.LoginSuccess -> {}
-                    is LoginUiState.Error -> {}
+                    is LoginUiState.Error -> { }
                 }
             }
         }
