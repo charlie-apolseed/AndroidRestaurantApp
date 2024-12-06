@@ -128,9 +128,9 @@ fun AIRecommendationScreen(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .fillMaxHeight(.8f),
+                    .fillMaxHeight(.7f),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
+                    containerColor = MaterialTheme.colorScheme.inverseSurface,
                     contentColor = MaterialTheme.colorScheme.onSurface
                 ),
                 shape = RoundedCornerShape(10.dp),
@@ -155,8 +155,8 @@ fun AIRecommendationScreen(
                             painter = painterResource(id = R.drawable.logo),
                             contentDescription = "Loading",
                             modifier = Modifier
-                                .padding(10.dp)
-                                .size(500.dp),
+                                .padding(bottom = 10.dp, start = 10.dp, end = 10.dp)
+                                .size(425.dp),
                             alpha = .3f
                         )
                         if (generatedText == "Generating...") {
@@ -183,16 +183,16 @@ fun AIRecommendationScreen(
                     }
                 }
             }
-            Row(
+            Column(
                 modifier = Modifier.fillMaxWidth()
                     .padding(top = 25.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top
             ) {
                 Button(
                     modifier = Modifier
-                        .weight(1f)
-                        .padding(end = 8.dp)
-                        .height(50.dp),
+                        .fillMaxWidth()
+                        .height(40.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.surface,
                         contentColor = MaterialTheme.colorScheme.onSurface
@@ -201,14 +201,14 @@ fun AIRecommendationScreen(
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 5.dp),
                     onClick = { viewmodel.getAIRecommendation("Recommendation") }
                 ) {
-                    Text(text = viewmodel.button1Text, fontSize = 15.sp)
+                    Text(text = viewmodel.button1Text, fontSize = 20.sp)
                 }
 
                 Button(
                     modifier = Modifier
-                        .weight(1f)
-                        .padding(horizontal = 8.dp)
-                        .height(50.dp),
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp)
+                        .height(40.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.surface,
                         contentColor = MaterialTheme.colorScheme.onSurface
@@ -217,14 +217,13 @@ fun AIRecommendationScreen(
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 5.dp),
                     onClick = { viewmodel.getAIRecommendation("Reviews") }
                 ) {
-                    Text(text = viewmodel.button2Text, fontSize = 15.sp)
+                    Text(text = viewmodel.button2Text, fontSize = 20.sp)
                 }
 
                 Button(
                     modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 8.dp)
-                        .height(50.dp),
+                        .fillMaxWidth()
+                        .height(40.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.surface,
                         contentColor = MaterialTheme.colorScheme.onSurface
@@ -233,7 +232,7 @@ fun AIRecommendationScreen(
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 5.dp),
                     onClick = { viewmodel.getAIRecommendation("Best Nearby") }
                 ) {
-                    Text(text = viewmodel.button3Text, fontSize = 15.sp)
+                    Text(text = viewmodel.button3Text, fontSize = 20.sp)
                 }
             }
 

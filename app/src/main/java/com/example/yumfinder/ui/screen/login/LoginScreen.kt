@@ -53,8 +53,8 @@ fun LoginScreen(
     onSuccessfulLogin: () -> Unit
 ) {
     var showPassword by rememberSaveable { mutableStateOf(false) }
-    var email by rememberSaveable { mutableStateOf("charlie.apolinsky@gmail.com") }
-    var password by rememberSaveable { mutableStateOf("1234Sally!!!") }
+    var email by rememberSaveable { mutableStateOf("") }
+    var password by rememberSaveable { mutableStateOf("") }
 
     Scaffold(
         topBar = {

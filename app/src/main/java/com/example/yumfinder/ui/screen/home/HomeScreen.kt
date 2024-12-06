@@ -1,12 +1,7 @@
 package com.example.yumfinder.ui.screen.home
 
-import android.location.Address
-import android.location.Geocoder
-import android.os.Build
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,9 +21,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -36,10 +29,10 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,15 +45,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.ViewModel
 import com.example.yumfinder.R
 import com.example.yumfinder.data.RestaurantItem
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
-import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapType
@@ -68,7 +58,6 @@ import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -80,27 +69,7 @@ fun HomeScreen(
     onAllReviewsAction: () -> Unit,
     onAIRecommendationAction: () -> Unit
 ) {
-    val visitedRestaurants by viewModel.getAllRestaurants().collectAsState(initial = emptyList())
-
-    //Map states
     val context = LocalContext.current
-    val startLocation by remember {
-        mutableStateOf(
-            if (visitedRestaurants.isNotEmpty()) {
-                LatLng(
-                    visitedRestaurants[0].restaurantLatitude,
-                    visitedRestaurants[0].restaurantLongitude
-                )
-            } else {
-                LatLng(41.3878, 2.1532) // Default location
-            }
-        )
-    }
-    var cameraState = rememberCameraPositionState {
-        CameraPosition.fromLatLngZoom(
-            startLocation, 18f
-        )
-    }
     var uiSettings by remember {
         mutableStateOf(
             MapUiSettings(
@@ -121,12 +90,35 @@ fun HomeScreen(
         )
     }
 
-    LaunchedEffect(Unit) {
-        cameraState.animate(
-            CameraUpdateFactory.newCameraPosition(
-                CameraPosition(startLocation, 15f, 0f, 0f)
-            )
+    val visitedRestaurants by viewModel.getAllRestaurants().collectAsState(initial = emptyList())
+
+    val startLocation by remember(visitedRestaurants) {
+        derivedStateOf {
+            if (visitedRestaurants.isNotEmpty()) {
+                LatLng(
+                    visitedRestaurants.last().restaurantLatitude,
+                    visitedRestaurants.last().restaurantLongitude
+                )
+            } else {
+                LatLng(41.3878, 2.1532) // Default location
+            }
+        }
+    }
+
+    var cameraState = rememberCameraPositionState {
+        CameraPosition.fromLatLngZoom(
+            startLocation, 18f
         )
+    }
+
+    LaunchedEffect(visitedRestaurants) {
+        if (visitedRestaurants.isNotEmpty()) {
+            cameraState.animate(
+                CameraUpdateFactory.newCameraPosition(
+                    CameraPosition(startLocation, 12f, 0f, 0f)
+                )
+            )
+        }
     }
 
     Scaffold(

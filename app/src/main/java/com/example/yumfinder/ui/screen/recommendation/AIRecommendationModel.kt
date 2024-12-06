@@ -30,9 +30,9 @@ class AIRecommendationModel @Inject constructor(
     val textGenerationResult = _textGenerationResult.asStateFlow()
 
     var headerText by mutableStateOf("Good morning, User")
-    var button1Text by mutableStateOf("Recommendations")
-    var button2Text by mutableStateOf("Reviews Summary")
-    var button3Text by mutableStateOf("Best Nearby")
+    var button1Text by mutableStateOf("AI recommendations")
+    var button2Text by mutableStateOf("Summarize my reviews")
+    var button3Text by mutableStateOf("Best places near me")
 
     init {
         generateHeader()
@@ -78,7 +78,7 @@ class AIRecommendationModel @Inject constructor(
                 "\nArany Kaviár - District I, Budapest: This Michelin-starred restaurant is known for its contemporary hungarian " +
                 "cuisine and innovative dishes. Luxurious but expensive, Arany Kaviár would be perfect for a special occasion." +
                 "\n\n" +
-                "Here are some of the restaurants I have been to and my reviews of them:\n\n"
+                "Do not include any bold text. Here are some of the restaurants I have been to and my reviews of them:\n\n"
     private val reviewsPromptHeader =
         "Write a short 2-3 paragraph summary of my the reviews of the restaurants I have been to. This " +
                 "is an example of what I am looking for: Mazel Tov and David's Kitchen received exceptional " +
@@ -88,7 +88,7 @@ class AIRecommendationModel @Inject constructor(
                 "Hari Kebab, while still scoring highly for food, fell slightly short in the vibes and staff categories, " +
                 "resulting in a lower overall rating of 7. Despite this, reviewers acknowledged the establishment as serving " +
                 "the best kebabs in Budapest." +
-                "\n\nThese are my reviews:\n\n"
+                "\n\nDo not include any bold text. These are my reviews:\n\n"
     private val nearbyPromptHeader =
         "Give me 3 restaurant recommendations for a nearby restaurants that I have not been to and provide a 2-3 sentence description for each. " +
                 "Make sure the restaurants are nearby, and base it off the following format: \n\n" +
@@ -99,7 +99,7 @@ class AIRecommendationModel @Inject constructor(
                 "2. **Bestia** - This trendy and vibrant spot serves up modern Italian dishes with a twist. " +
                 "The open kitchen allows you to watch the chefs in action as they prepare mouthwatering " +
                 "creations like homemade pasta with wild boar ragu or sea bass with roasted vegetables." +
-                "\n\nMake sure none of the following places are included: \n"
+                "\n\nDo not include any bold text. Make sure none of the following places are included: \n"
 
 
 
