@@ -1,6 +1,7 @@
 # ApolEats 🍽️
 
-Welcome to **ApolEats**, an Android app designed for food lovers who want an ad-free, authentic way to discover and share restaurants with friends. ApolEats is a personal project created for fun, built with **Kotlin** and **Jetpack Compose**. It uses **Firebase** for authentication and networking, and it incorporates features that will leverage the **Google Maps API** to offer a seamless experience in finding great dining spots.
+Welcome to **ApolEats**, an Android app designed for food lovers who want an ad-free, authentic way to discover and share restaurants with friends. ApolEats is a personal project created for fun, built with **Kotlin** and **Jetpack Compose**. It uses **Firebase** for authentication and networking, **Gemini** for AI recommendations, and
+the **Google Maps** API for location services.rates features that will leverage the **Google Maps API** to offer a seamless experience in finding great dining spots.
 
 ## Inspiration
 
