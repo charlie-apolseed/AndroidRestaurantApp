@@ -133,7 +133,7 @@ class AIRecommendationModel @Inject constructor(
                 val generatedText = result.text
                 _textGenerationResult.value = generatedText
             } catch (e: Exception) {
-                _textGenerationResult.value = "Error: ${e.message}"
+                _textGenerationResult.value = "Error:  ${e.message}"
             }
         }
     }
