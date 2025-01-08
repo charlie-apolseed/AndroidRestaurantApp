@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">YumFinder</string>
+    <string name="generating">Generating...</string>
+    <string name="loading">Loading</string>
+    <string name="how_can_i_help_you_today">How can I help you today?</string>
+    <string name="ai_restaurant_recommendation">AI Restaurant Recommendation</string>
 </resources>

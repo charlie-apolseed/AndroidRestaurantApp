@@ -4,6 +4,8 @@ import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import com.example.yumfinder.data.RestaurantDAO
+import com.google.android.gms.maps.model.BitmapDescriptor
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Date
 import javax.inject.Inject
@@ -51,6 +53,15 @@ class HomeScreenModel @Inject constructor(
             }
         } catch (e: Exception) {
             "Invalid date format"
+        }
+    }
+
+    fun getMarkerColor(rating: String): BitmapDescriptor {
+        val ratingValue = rating.toFloatOrNull()
+        return if (ratingValue != null && ratingValue > 9) {
+            BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA)
+        } else {
+            BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
         }
     }
 }

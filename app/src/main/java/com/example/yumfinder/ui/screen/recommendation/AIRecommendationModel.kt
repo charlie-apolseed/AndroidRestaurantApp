@@ -29,6 +29,7 @@ class AIRecommendationModel @Inject constructor(
     private val _textGenerationResult = MutableStateFlow<String?>(null)
     val textGenerationResult = _textGenerationResult.asStateFlow()
 
+    var recLength by mutableStateOf(3)
     var headerText by mutableStateOf("Good morning, User")
     var button1Text by mutableStateOf("AI recommendations")
     var button2Text by mutableStateOf("Summarize my reviews")
@@ -41,6 +42,7 @@ class AIRecommendationModel @Inject constructor(
 
     private fun generateHeader() {
         val currentTime = System.currentTimeMillis()
+        Log.d("AIRecommendationModel", "Current time: $currentTime")
         val hours = (currentTime / (1000 * 60 * 60)) % 24
         when (hours) {
             in 5..11 -> {
@@ -55,7 +57,7 @@ class AIRecommendationModel @Inject constructor(
                 headerText = "Good evening, "
             }
         }
-        headerText += Firebase.auth.currentUser?.email?.split("@")?.get(0) ?: "User"
+        headerText += Firebase.auth.currentUser?.email?.split(".")?.get(0) ?: "User" //TODO Switch this to username
     }
 
     private fun fetchRestaurants() {
@@ -71,16 +73,17 @@ class AIRecommendationModel @Inject constructor(
         }
     }
 
-    private val recommendationPromptHeader =
-        "Give me 3 new restaurant recommendations and provide a 2 sentence description for each. " +
+    private fun recommendationPromptHeader(): String {
+        return "Give me $recLength new restaurant recommendations and provide a 3 sentence description for each. " +
                 " Make sure the restaurants " +
                 "you recommend are in the city that the most recent places I have been are in. Here is an example of the format: " +
                 "\nArany Kaviár - District I, Budapest: This Michelin-starred restaurant is known for its contemporary hungarian " +
                 "cuisine and innovative dishes. Luxurious but expensive, Arany Kaviár would be perfect for a special occasion." +
                 "\n\n" +
-                "Do not include any bold text. Here are some of the restaurants I have been to and my reviews of them:\n\n"
-    private val reviewsPromptHeader =
-        "Write a short 2-3 paragraph summary of my the reviews of the restaurants I have been to. This " +
+                "Do not include any bold text! Here are some of the restaurants I have been to and my reviews of them:\n\n"
+    }
+    private fun reviewsPromptHeader(): String {
+        return "Write a short $recLength paragraph summary of my the reviews of the restaurants I have been to. This " +
                 "is an example of what I am looking for: Mazel Tov and David's Kitchen received exceptional " +
                 "ratings, with high scores for food, vibes, and staff, earning an impressive 9.3 rating overall. " +
                 "Reviewers praised the excellent cuisine and stunning interior of Mazel Tov, while David's Kitchen " +
@@ -88,9 +91,10 @@ class AIRecommendationModel @Inject constructor(
                 "Hari Kebab, while still scoring highly for food, fell slightly short in the vibes and staff categories, " +
                 "resulting in a lower overall rating of 7. Despite this, reviewers acknowledged the establishment as serving " +
                 "the best kebabs in Budapest." +
-                "\n\nDo not include any bold text. These are my reviews:\n\n"
-    private val nearbyPromptHeader =
-        "Give me 3 restaurant recommendations for a nearby restaurants that I have not been to and provide a 2-3 sentence description for each. " +
+                "\n\nDo not include any bold text! These are my reviews:\n\n"
+    }
+    private fun nearbyPromptHeader(): String {
+        return "Give me $recLength restaurant recommendations for a nearby restaurants that I have not been to and provide a 3 sentence description for each. " +
                 "Make sure the restaurants are nearby, and base it off the following format: \n\n" +
                 "1. **Tranzit Etterem** - This cozy and relaxed restaurant offers a blend of Hungarian " +
                 "and international cuisine, with a focus on fresh, seasonal ingredients. The menu changes " +
@@ -99,7 +103,9 @@ class AIRecommendationModel @Inject constructor(
                 "2. **Bestia** - This trendy and vibrant spot serves up modern Italian dishes with a twist. " +
                 "The open kitchen allows you to watch the chefs in action as they prepare mouthwatering " +
                 "creations like homemade pasta with wild boar ragu or sea bass with roasted vegetables." +
-                "\n\nDo not include any bold text. Make sure none of the following places are included: \n"
+                "\n\nDo not include any bold text! Make sure none of the following places are included: \n"
+
+    }
 
 
 
@@ -114,10 +120,10 @@ class AIRecommendationModel @Inject constructor(
             headerText = "Restaurant recommendation"
             prompt = buildRecommendationPrompt()
         } else if (promptType == "Reviews") {
-            headerText = "Review summary"
+            headerText = "Review Summary"
             prompt = buildReviewsPrompt()
         } else {
-            headerText = "Best restaurants nearby"
+            headerText = "Best Nearby"
             prompt = buildBestNearbyPrompt()
         }
         _textGenerationResult.value = "Generating..."
@@ -134,7 +140,7 @@ class AIRecommendationModel @Inject constructor(
 
     private fun buildRecommendationPrompt(): String {
         return buildString {
-            append(recommendationPromptHeader)
+            append(recommendationPromptHeader())
             _visitedRestaurants.value.forEach { review ->
                 append(review)
             }
@@ -143,7 +149,7 @@ class AIRecommendationModel @Inject constructor(
 
     private fun buildReviewsPrompt(): String {
         return buildString {
-            append(reviewsPromptHeader)
+            append(reviewsPromptHeader())
             _visitedRestaurants.value.forEach { review ->
                 append(review)
             }
@@ -152,7 +158,7 @@ class AIRecommendationModel @Inject constructor(
 
     private fun buildBestNearbyPrompt(): String {
         return buildString {
-            append(nearbyPromptHeader)
+            append(nearbyPromptHeader())
             _visitedRestaurants.value.forEach { review ->
                 append(review)
             }

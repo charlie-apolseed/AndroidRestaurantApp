@@ -98,5 +98,4 @@ dependencies {
     implementation(libs.play.services.location)
     // Permission handling
     implementation(libs.accompanist)
-
 }

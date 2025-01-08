@@ -184,6 +184,8 @@ fun HomeScreen(
                         ),
                         title = review.restaurantName,
                         snippet = review.restaurantRating,
+                        icon = viewModel.getMarkerColor(
+                            review.restaurantRating)
                     )
                 }
             }
@@ -314,7 +316,7 @@ fun HomeScreen(
                     text = "Recent Activity"
                 )
 
-                for (restaurant in visitedRestaurants) {
+                for (restaurant in visitedRestaurants.take(3).reversed()) {
                     RestaurantCard(
                         restaurant = restaurant,
                         modifier = Modifier

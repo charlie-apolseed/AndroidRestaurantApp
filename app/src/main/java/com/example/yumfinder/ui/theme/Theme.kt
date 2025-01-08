@@ -39,8 +39,7 @@ private val LightColorScheme = lightColorScheme(
     onSecondaryContainer = Color.Black,
     background = Color(0xFFFFFBFE),
     onBackground = Color(0xFFE7DDE2),
-    surfaceVariant = Color(0xFFF1EAEB),
-    inverseSurface = Color(0xFFE1DAC5)
+    surfaceVariant = Color(0xFFF1EAEB)
 
 
     )
