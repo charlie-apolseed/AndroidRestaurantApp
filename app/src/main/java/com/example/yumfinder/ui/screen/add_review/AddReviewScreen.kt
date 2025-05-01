@@ -1,9 +1,15 @@
 package com.example.yumfinder.ui.screen.add_review
 
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
 import android.location.Address
 import android.location.Geocoder
+import android.location.Location
+import android.location.LocationManager
 import android.os.Build
+import android.widget.Toast
 import androidx.compose.foundation.Image
 
 import androidx.compose.foundation.layout.Arrangement
@@ -43,6 +49,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -61,9 +68,13 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.yumfinder.R
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
@@ -76,7 +87,9 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import java.util.Locale
+import kotlin.coroutines.resume
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
@@ -95,6 +108,38 @@ fun AddReviewScreen(
     //Map states
     val context = LocalContext.current
     val newLocation by viewmodel.newLocation.collectAsState()
+
+    //Location Services
+    val locationPermissionState = rememberMultiplePermissionsState(
+        permissions = listOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        )
+    )
+
+    if (locationPermissionState.allPermissionsGranted) {
+        Toast.makeText(context, "Location permission granted", Toast.LENGTH_SHORT).show()
+    } else {
+        // Request permission
+        SideEffect {
+            locationPermissionState.launchMultiplePermissionRequest()
+        }
+
+        if (locationPermissionState.shouldShowRationale) {
+            Toast.makeText(
+                context,
+                "Location permission is needed to determine the restaurant's address.",
+                Toast.LENGTH_LONG
+            ).show()
+        } else {
+            Toast.makeText(
+                context,
+                "Location permission denied. You won't be able to set the address using your location.",
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
+
 
 
     val cameraState = rememberCameraPositionState {
@@ -120,6 +165,9 @@ fun AddReviewScreen(
             )
         )
     }
+
+
+
 
     LaunchedEffect(newLocation) {
         cameraState.animate(
@@ -862,3 +910,50 @@ fun AddReviewScreen(
     }
 }
 
+class LocationManager(
+    val context: Context,
+    val fusedLocationProviderClient: FusedLocationProviderClient
+) {
+    suspend fun getLocation(): Location? {
+        val hasAccessCoarseLocationPermission = ContextCompat.checkSelfPermission(
+            context,
+            android.Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
+        val hasAccessFineLocationPermission = ContextCompat.checkSelfPermission(
+            context,
+            android.Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
+        val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
+        val isGpsEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+                || locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+
+        if (!isGpsEnabled && !(hasAccessCoarseLocationPermission || hasAccessFineLocationPermission)) {
+            return null
+        }
+
+        return suspendCancellableCoroutine { cont ->
+            fusedLocationProviderClient.lastLocation.apply {
+                if (isComplete) {
+                    if (isSuccessful) {
+                        cont.resume(result)
+                    } else {
+                        cont.resume(null)
+                    }
+                    return@suspendCancellableCoroutine
+                }
+                addOnSuccessListener {
+                    cont.resume(it)
+                }
+                addOnFailureListener {
+                    cont.resume(null)
+                }
+                addOnCanceledListener {
+                    cont.cancel()
+                }
+            }
+        }
+    }
+}

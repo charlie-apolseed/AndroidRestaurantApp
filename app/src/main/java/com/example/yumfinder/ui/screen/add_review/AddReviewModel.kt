@@ -1,5 +1,7 @@
 package com.example.yumfinder.ui.screen.add_review
 
+import android.annotation.SuppressLint
+import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.getValue
 
@@ -11,10 +13,13 @@ import androidx.lifecycle.viewModelScope
 import com.example.yumfinder.R
 import com.example.yumfinder.data.RestaurantDAO
 import com.example.yumfinder.data.RestaurantItem
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,7 +30,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AddReviewModel @Inject constructor(
-    val restaurantDAO: RestaurantDAO, savedStateHandle: SavedStateHandle
+    val restaurantDAO: RestaurantDAO, savedStateHandle: SavedStateHandle,
+    @ApplicationContext private val appContext: Context
 ) : ViewModel() {
 
 
@@ -75,6 +81,33 @@ class AddReviewModel @Inject constructor(
 
     //Set new location to the existing review if it exists
     var markerPosition by mutableStateOf(LatLng(0.0, 0.0))
+
+    private val _currentLocation = MutableStateFlow<String?>(null)
+    val currentLocation: StateFlow<String?> = _currentLocation
+
+    private val fusedLocationClient: FusedLocationProviderClient =
+        LocationServices.getFusedLocationProviderClient(appContext)
+
+    @SuppressLint("MissingPermission")
+    fun getCurrentLocation() {
+        try {
+            fusedLocationClient.lastLocation
+                .addOnSuccessListener { location ->
+                    location?.let {
+                        _currentLocation.value = "Lat: ${it.latitude}, Lon: ${it.longitude}"
+                        // You can now use this location data (e.g., reverse geocode to get address)
+                    } ?: run {
+                        _currentLocation.value = "Could not retrieve location."
+                    }
+                }
+                .addOnFailureListener { e ->
+                    _currentLocation.value = "Error getting location: ${e.localizedMessage}"
+                }
+        } catch (e: SecurityException) {
+            // This should not happen if permissions are correctly checked in the screen
+            _currentLocation.value = "Location permission not granted."
+        }
+    }
 
 
     fun confirmNewLocation() {

@@ -110,7 +110,7 @@ class AIRecommendationModel @Inject constructor(
 
 
     private val generativeModel = GenerativeModel(
-        modelName = "gemini-pro",
+        modelName = "gemini-2.0-pro-exp-02-05",
         apiKey = "AIzaSyCPa_DY0AqC1ilZJiL2mr845kleSSiZbLI"
     )
 
