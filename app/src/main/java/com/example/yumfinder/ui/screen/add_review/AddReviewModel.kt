@@ -82,34 +82,6 @@ class AddReviewModel @Inject constructor(
     //Set new location to the existing review if it exists
     var markerPosition by mutableStateOf(LatLng(0.0, 0.0))
 
-    private val _currentLocation = MutableStateFlow<String?>(null)
-    val currentLocation: StateFlow<String?> = _currentLocation
-
-    private val fusedLocationClient: FusedLocationProviderClient =
-        LocationServices.getFusedLocationProviderClient(appContext)
-
-    @SuppressLint("MissingPermission")
-    fun getCurrentLocation() {
-        try {
-            fusedLocationClient.lastLocation
-                .addOnSuccessListener { location ->
-                    location?.let {
-                        _currentLocation.value = "Lat: ${it.latitude}, Lon: ${it.longitude}"
-                        // You can now use this location data (e.g., reverse geocode to get address)
-                    } ?: run {
-                        _currentLocation.value = "Could not retrieve location."
-                    }
-                }
-                .addOnFailureListener { e ->
-                    _currentLocation.value = "Error getting location: ${e.localizedMessage}"
-                }
-        } catch (e: SecurityException) {
-            // This should not happen if permissions are correctly checked in the screen
-            _currentLocation.value = "Location permission not granted."
-        }
-    }
-
-
     fun confirmNewLocation() {
         locationConfirmed = true
         _newLocation.update { markerPosition }

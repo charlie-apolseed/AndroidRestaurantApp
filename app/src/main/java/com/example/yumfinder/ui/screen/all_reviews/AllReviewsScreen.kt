@@ -1,5 +1,7 @@
 package com.example.yumfinder.ui.screen.all_reviews
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -58,8 +60,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.yumfinder.R
 import com.example.yumfinder.data.RestaurantItem
 import com.example.yumfinder.ui.screen.your_visits.ListModel
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AllReviewsScreen(
@@ -342,6 +348,7 @@ fun AllReviewsScreen(
 }
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun RestaurantCard(restaurant: RestaurantItem, modifier: Modifier, onEditAction: (Int) -> Unit) {
     val name = if (restaurant.restaurantName.length > 20) {
@@ -355,11 +362,23 @@ fun RestaurantCard(restaurant: RestaurantItem, modifier: Modifier, onEditAction:
     } else {
         restaurant.restaurantAddress
     }
+    val rawDate = restaurant.visitedDate
 
-    val dateFormatted = restaurant.visitedDate.substring(
-        4,
-        10
-    ) + ", " + restaurant.visitedDate.substring(30) + ""
+
+    val inputFormatter = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss z yyyy", Locale.ENGLISH)
+    var dateFormatted = ""
+    try {
+        val parsedDate = ZonedDateTime.parse(rawDate, inputFormatter)
+
+        // Format to "Dec 01, 2024"
+        val outputFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy", Locale.ENGLISH)
+        val formattedDate = outputFormatter.format(parsedDate)
+        dateFormatted = formattedDate // Use this in your UI
+
+    } catch (e: Exception) {
+        dateFormatted = rawDate
+    }
+
     val backgroundColor = if (restaurant.restaurantRating.toFloat() > 9) {
         MaterialTheme.colorScheme.secondaryContainer
     } else {

@@ -1,5 +1,6 @@
 package com.example.yumfinder.ui.screen.home
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -45,6 +46,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import com.example.yumfinder.R
 import com.example.yumfinder.data.RestaurantItem
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -70,6 +74,8 @@ fun HomeScreen(
     onAIRecommendationAction: () -> Unit
 ) {
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+
     var uiSettings by remember {
         mutableStateOf(
             MapUiSettings(
@@ -92,32 +98,40 @@ fun HomeScreen(
 
     val visitedRestaurants by viewModel.getAllRestaurants().collectAsState(initial = emptyList())
 
-    val startLocation by remember(visitedRestaurants) {
-        derivedStateOf {
-            if (visitedRestaurants.isNotEmpty()) {
+    val initialCameraPosition = remember(visitedRestaurants) {
+        if (visitedRestaurants.isNotEmpty()) {
+            Log.d("HomeScreen", "Initial camera position set to last location: ${visitedRestaurants.last()}")
+            CameraPosition.fromLatLngZoom(
                 LatLng(
                     visitedRestaurants.last().restaurantLatitude,
                     visitedRestaurants.last().restaurantLongitude
-                )
-            } else {
-                LatLng(41.3878, 2.1532) // Default location
-            }
+                ), 8f // Adjust initial zoom as needed
+            )
+        } else {
+            Log.d("HomeScreen", "Initial camera position set to default location")
+            CameraPosition.fromLatLngZoom(LatLng(43.739599157808485, -70.04142321646214), 8f) // Default location
         }
     }
 
-    var cameraState = rememberCameraPositionState {
-        CameraPosition.fromLatLngZoom(
-            startLocation, 18f
-        )
+    val cameraPositionState = rememberCameraPositionState {
+        position = initialCameraPosition
     }
 
-    LaunchedEffect(visitedRestaurants) {
-        if (visitedRestaurants.isNotEmpty()) {
-            cameraState.animate(
-                CameraUpdateFactory.newCameraPosition(
-                    CameraPosition(startLocation, 12f, 0f, 0f)
+    // Use LaunchedEffect to trigger animation when the screen is resumed
+    LaunchedEffect(lifecycleOwner.lifecycle.currentState) {
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            if (visitedRestaurants.isNotEmpty()) {
+                val lastLocation = LatLng(
+                    visitedRestaurants.last().restaurantLatitude,
+                    visitedRestaurants.last().restaurantLongitude
                 )
-            )
+                Log.d("HomeScreen", "Animating camera to last location on resume: $lastLocation")
+                cameraPositionState.animate(
+                    CameraUpdateFactory.newCameraPosition(
+                        CameraPosition(lastLocation, 8f, 0f, 0f) // Adjust zoom as needed
+                    )
+                )
+            }
         }
     }
 
@@ -170,7 +184,7 @@ fun HomeScreen(
                     .background(color = MaterialTheme.colorScheme.primary)
                     .fillMaxWidth(0.9f)
                     .fillMaxHeight(.6f),
-                cameraPositionState = cameraState,
+                cameraPositionState = cameraPositionState,
                 uiSettings = uiSettings,
                 properties = mapProperties
             ) {

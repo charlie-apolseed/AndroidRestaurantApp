@@ -109,38 +109,6 @@ fun AddReviewScreen(
     val context = LocalContext.current
     val newLocation by viewmodel.newLocation.collectAsState()
 
-    //Location Services
-    val locationPermissionState = rememberMultiplePermissionsState(
-        permissions = listOf(
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION
-        )
-    )
-
-    if (locationPermissionState.allPermissionsGranted) {
-        Toast.makeText(context, "Location permission granted", Toast.LENGTH_SHORT).show()
-    } else {
-        // Request permission
-        SideEffect {
-            locationPermissionState.launchMultiplePermissionRequest()
-        }
-
-        if (locationPermissionState.shouldShowRationale) {
-            Toast.makeText(
-                context,
-                "Location permission is needed to determine the restaurant's address.",
-                Toast.LENGTH_LONG
-            ).show()
-        } else {
-            Toast.makeText(
-                context,
-                "Location permission denied. You won't be able to set the address using your location.",
-                Toast.LENGTH_LONG
-            ).show()
-        }
-    }
-
-
 
     val cameraState = rememberCameraPositionState {
         CameraPosition.fromLatLngZoom(
