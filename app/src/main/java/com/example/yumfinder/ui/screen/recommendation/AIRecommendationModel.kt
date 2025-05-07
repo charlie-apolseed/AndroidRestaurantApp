@@ -8,19 +8,24 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.yumfinder.data.RestaurantDAO
 import com.example.yumfinder.data.RestaurantItem
+import com.example.yumfinder.data.location.LocationRepository
 import com.google.ai.client.generativeai.GenerativeModel
+import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import java.util.Calendar
 import javax.inject.Inject
 
 @HiltViewModel
 class AIRecommendationModel @Inject constructor(
+    private val locationRepository: LocationRepository,
     private val restaurantDAO: RestaurantDAO
 ) : ViewModel() {
     private val _visitedRestaurants = MutableStateFlow<List<RestaurantItem>>(emptyList())
@@ -35,29 +40,37 @@ class AIRecommendationModel @Inject constructor(
     var button2Text by mutableStateOf("Summarize my reviews")
     var button3Text by mutableStateOf("Best places near me")
 
+    private val _currentLocation = MutableStateFlow<LatLng?>(null)
+    val currentLocation: StateFlow<LatLng?> = _currentLocation
+
+    init {
+        // Start collecting location updates when the ViewModel is created
+        viewModelScope.launch {
+            locationRepository.getCurrentLocation().collect { location ->
+                _currentLocation.value = location
+            }
+        }
+    }
+
     init {
         generateHeader()
         fetchRestaurants()
+        viewModelScope.launch {
+            locationRepository.getCurrentLocation().collect { location ->
+                _currentLocation.value = location
+            }
+        }
     }
 
     private fun generateHeader() {
-        val currentTime = System.currentTimeMillis()
-        Log.d("AIRecommendationModel", "Current time: $currentTime")
-        val hours = (currentTime / (1000 * 60 * 60)) % 24
-        when (hours) {
-            in 5..11 -> {
-                headerText = "Good morning, "
-            }
-
-            in 12..16 -> {
-                headerText = "Good afternoon, "
-            }
-
-            else -> {
-                headerText = "Good evening, "
-            }
+        val calendar = Calendar.getInstance() // uses local time zone
+        val hour = calendar.get(Calendar.HOUR_OF_DAY) // 0 - 23
+        headerText = when (hour) {
+            in 5..11 -> "Good morning, "
+            in 12..16 -> "Good afternoon, "
+            else -> "Good evening, "
         }
-        headerText += Firebase.auth.currentUser?.email?.split(".")?.get(0) ?: "User" //TODO Switch this to username
+        headerText += Firebase.auth.currentUser?.email?.split(".")?.get(0) ?: "User"
     }
 
     private fun fetchRestaurants() {
@@ -74,8 +87,9 @@ class AIRecommendationModel @Inject constructor(
     }
 
     private fun recommendationPromptHeader(): String {
-        return "Give me $recLength new restaurant recommendations and provide a 3 sentence description for each. " +
-                " Make sure the restaurants " +
+        val location = _currentLocation.value
+        return "Give me $recLength restaurant recommendations for places near my current location (${location!!.latitude}, ${location.longitude}) that I have not been to and provide a 3 sentence description for each. " +
+                "Make sure the restaurants are nearby, and base it off the following format: \n\n" +
                 "you recommend are in the city that the most recent places I have been are in. Here is an example of the format: " +
                 "\nArany Kaviár - District I, Budapest: This Michelin-starred restaurant is known for its contemporary hungarian " +
                 "cuisine and innovative dishes. Luxurious but expensive, Arany Kaviár would be perfect for a special occasion." +
@@ -94,7 +108,8 @@ class AIRecommendationModel @Inject constructor(
                 "\n\nDo not include any bold text! These are my reviews:\n\n"
     }
     private fun nearbyPromptHeader(): String {
-        return "Give me $recLength restaurant recommendations for a nearby restaurants that I have not been to and provide a 3 sentence description for each. " +
+        val location = _currentLocation.value
+        return "Give me $recLength restaurant recommendations for places near my current location (${location!!.latitude}, ${location.longitude}) that I have not been to and provide a 3 sentence description for each. " +
                 "Make sure the restaurants are nearby, and base it off the following format: \n\n" +
                 "1. **Tranzit Etterem** - This cozy and relaxed restaurant offers a blend of Hungarian " +
                 "and international cuisine, with a focus on fresh, seasonal ingredients. The menu changes " +

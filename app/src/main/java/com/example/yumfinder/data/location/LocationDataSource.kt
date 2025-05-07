@@ -13,12 +13,13 @@ import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import javax.inject.Inject
 
 interface LocationDataSource {
     fun getLocationUpdates(): Flow<LatLng>
 }
 
-class LocationDataSourceImpl(
+class LocationDataSourceImpl @Inject constructor(
     private val context: Context
 ) : LocationDataSource {
 
