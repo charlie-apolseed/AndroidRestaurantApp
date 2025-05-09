@@ -34,6 +34,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -57,7 +61,7 @@ fun AIRecommendationScreen(
     viewmodel: AIRecommendationModel = hiltViewModel()
 ) {
     val generatedText = viewmodel.textGenerationResult.collectAsState().value
-
+    val parsedRecommendations = viewmodel.parsedRecommendations.collectAsState().value
 
     Scaffold(topBar = {
         CenterAlignedTopAppBar(
@@ -65,7 +69,9 @@ fun AIRecommendationScreen(
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth(0.9f).padding(top = 10.dp)
+                    modifier = Modifier
+                        .fillMaxWidth(0.9f)
+                        .padding(top = 10.dp)
                 ) {
                     IconButton(onClick = { onBackAction() }) {
                         Icon(
@@ -144,7 +150,7 @@ fun AIRecommendationScreen(
                     Text(
                         modifier = Modifier.padding(
                             top = 20.dp,
-                            bottom = 10.dp,
+                            bottom = 15.dp,
                             start = 5.dp,
                             end = 5.dp
                         ),
@@ -154,23 +160,53 @@ fun AIRecommendationScreen(
                         color = gray
                     )
                     if (generatedText != null && generatedText != stringResource(R.string.generating)) {
-                        Text(
-                            text = generatedText,
-                            modifier = Modifier
-                                .padding(vertical = 16.dp, horizontal = 8.dp)
-                                .fillMaxWidth(),
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight(600),
-                            color = gray
-                        )
+                        if (viewmodel.headerText == "Restaurant Recommendation") {
+                            for (recommendation in parsedRecommendations) {
+                                val (name, location, summary) = recommendation
+                                Text(
+                                    text = name,
+                                    modifier = Modifier
+                                        .padding(vertical = 8.dp, horizontal = 8.dp)
+                                        .fillMaxWidth(),
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight(700),
+                                    color = gray
+                                )
+                                Text(
+                                    text = location,
+                                    modifier = Modifier
+                                        .padding(vertical = 0.dp, horizontal = 12.dp)
+                                        .fillMaxWidth()
+                                    ,
+                                    fontSize = 18.sp,
+                                    fontStyle = FontStyle.Italic
+                                )
+                                Text(
+                                    text = summary,
+                                    modifier = Modifier
+                                        .padding(vertical = 8.dp, horizontal = 8.dp)
+                                        .fillMaxWidth(),
+                                    fontSize = 18.sp,
+                                )
+                            }
+                        } else {
+                            Text(
+                                text = generatedText,
+                                modifier = Modifier
+                                    .padding(vertical = 16.dp, horizontal = 8.dp)
+                                    .fillMaxWidth(),
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight(600),
+                                color = gray
+                            )
+                        }
                     } else {
                         Image(
                             painter = painterResource(id = R.drawable.logo),
                             contentDescription = stringResource(R.string.loading),
                             modifier = Modifier
                                 .padding(bottom = 10.dp, start = 10.dp, end = 10.dp)
-                                .size(425.dp)
-                            ,
+                                .size(425.dp),
                             alpha = .3f,
                         )
                         if (generatedText == stringResource(R.string.generating)) {
@@ -204,7 +240,7 @@ fun AIRecommendationScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top
             ) {
-                if (viewmodel.headerText == "Restaurant recommendation") {
+                if (viewmodel.headerText == "Restaurant Recommendation") {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()

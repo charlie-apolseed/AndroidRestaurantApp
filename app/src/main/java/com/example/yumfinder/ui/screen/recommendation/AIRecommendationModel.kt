@@ -159,7 +159,7 @@ class AIRecommendationModel @Inject constructor(
     fun getAIRecommendation(promptType: String) {
         val promptBuilder = when (promptType) {
             "Recommendation" -> {
-                headerText = "Restaurant recommendation"
+                headerText = "Restaurant Recommendation"
                 ::buildRecommendationPrompt
             }
             "Reviews" -> {
@@ -187,7 +187,7 @@ class AIRecommendationModel @Inject constructor(
                 val rawResponse = result.text ?: ""
 
                 _textGenerationResult.value = rawResponse
-
+                Log.d("AIRecommendationModel", "Raw response: $rawResponse")
                 // Try to parse the JSON array directly
                 parseRecommendationsFromText(rawResponse)
 
@@ -214,6 +214,7 @@ class AIRecommendationModel @Inject constructor(
                 try {
                     val recommendations: List<AIRecommendation> = gson.fromJson(jsonString, type)
                     _parsedRecommendations.value = recommendations
+                    Log.d("AIRecommendationModel", "Parsed recommendations: $recommendations")
                 } catch (e: JsonSyntaxException) {
                     Log.e("AIRecommendationModel", "JSON parsing failed: ${e.message}", e)
                     // Try handling recommendations as a simple text response
@@ -250,3 +251,4 @@ class AIRecommendationModel @Inject constructor(
         }
     }
 }
+
