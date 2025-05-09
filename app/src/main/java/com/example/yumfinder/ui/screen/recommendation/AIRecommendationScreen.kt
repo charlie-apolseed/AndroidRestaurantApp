@@ -1,6 +1,7 @@
 package com.example.yumfinder.ui.screen.recommendation
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -64,7 +65,7 @@ fun AIRecommendationScreen(
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth(0.9f)
+                    modifier = Modifier.fillMaxWidth(0.9f).padding(top = 10.dp)
                 ) {
                     IconButton(onClick = { onBackAction() }) {
                         Icon(
@@ -87,7 +88,7 @@ fun AIRecommendationScreen(
                                     .padding(end = 10.dp)
                             )
                             Text(
-                                text = "| ApolEats",
+                                text = stringResource(R.string.apoleats),
                                 style = MaterialTheme.typography.headlineMedium
                             )
                         }
@@ -168,8 +169,9 @@ fun AIRecommendationScreen(
                             contentDescription = stringResource(R.string.loading),
                             modifier = Modifier
                                 .padding(bottom = 10.dp, start = 10.dp, end = 10.dp)
-                                .size(425.dp),
-                            alpha = .3f
+                                .size(425.dp)
+                            ,
+                            alpha = .3f,
                         )
                         if (generatedText == stringResource(R.string.generating)) {
                             Text(

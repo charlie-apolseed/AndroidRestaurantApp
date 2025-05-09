@@ -62,6 +62,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
@@ -171,7 +172,7 @@ fun AddReviewScreen(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 10.dp)) {
                                 Image(
                                     painter = painterResource(id = R.drawable.logo),
                                     contentDescription = "Logo",
@@ -180,7 +181,7 @@ fun AddReviewScreen(
                                         .padding(end = 10.dp)
                                 )
                                 Text(
-                                    text = "| ApolEats",
+                                    text = stringResource(R.string.apoleats),
                                     style = MaterialTheme.typography.headlineMedium
                                 )
                             }

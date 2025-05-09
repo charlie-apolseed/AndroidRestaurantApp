@@ -51,6 +51,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -130,7 +131,7 @@ fun AllReviewsScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 10.dp)) {
                             Image(
                                 painter = painterResource(id = R.drawable.logo),
                                 contentDescription = "Logo",
@@ -139,7 +140,7 @@ fun AllReviewsScreen(
                                     .padding(end = 10.dp)
                             )
                             Text(
-                                text = "| ApolEats",
+                                text = stringResource(R.string.apoleats),
                                 style = MaterialTheme.typography.headlineMedium
                             )
                         }

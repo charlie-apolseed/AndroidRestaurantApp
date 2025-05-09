@@ -25,6 +25,8 @@ playServicesMaps="18.2.0"
 playServicesLocation = "21.3.0"
 generativeai = "0.9.0"
 media3CommonKtx = "1.5.0"
+firebaseCrashlyticsBuildtools = "3.0.3"
+gson = "2.10.1"
 
 [libraries]
 
@@ -62,6 +64,12 @@ play-services-maps = { module = "com.google.android.gms:play-services-maps", ver
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 generativeai = { group = "com.google.ai.client.generativeai", name = "generativeai", version.ref = "generativeai" }
 androidx-media3-common-ktx = { group = "androidx.media3", name = "media3-common-ktx", version.ref = "media3CommonKtx" }
+firebase-crashlytics-buildtools = { group = "com.google.firebase", name = "firebase-crashlytics-buildtools", version.ref = "firebaseCrashlyticsBuildtools" }
+
+gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
+androidx-paging-runtime = { group = "androidx.paging", name = "paging-runtime", version = "3.2.1" }
+androidx-paging-compose = { group = "androidx.paging", name = "paging-compose", version = "3.2.1" }
+
 
 
 

@@ -13,6 +13,9 @@ import com.google.ai.client.generativeai.GenerativeModel
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import com.google.firebase.crashlytics.buildtools.reloc.com.google.common.reflect.TypeToken
+import com.google.gson.Gson
+import com.google.gson.JsonSyntaxException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,16 +26,25 @@ import kotlinx.coroutines.launch
 import java.util.Calendar
 import javax.inject.Inject
 
+data class AIRecommendation(
+    val name: String = "",
+    val location: String = "",
+    val summary: String = ""
+)
+
 @HiltViewModel
 class AIRecommendationModel @Inject constructor(
     private val locationRepository: LocationRepository,
     private val restaurantDAO: RestaurantDAO
 ) : ViewModel() {
+
     private val _visitedRestaurants = MutableStateFlow<List<RestaurantItem>>(emptyList())
 
-
     private val _textGenerationResult = MutableStateFlow<String?>(null)
-    val textGenerationResult = _textGenerationResult.asStateFlow()
+    val textGenerationResult: StateFlow<String?> = _textGenerationResult.asStateFlow()
+
+    private val _parsedRecommendations = MutableStateFlow<List<AIRecommendation>>(emptyList())
+    val parsedRecommendations: StateFlow<List<AIRecommendation>> = _parsedRecommendations.asStateFlow()
 
     var recLength by mutableStateOf(3)
     var headerText by mutableStateOf("Good morning, User")
@@ -42,15 +54,6 @@ class AIRecommendationModel @Inject constructor(
 
     private val _currentLocation = MutableStateFlow<LatLng?>(null)
     val currentLocation: StateFlow<LatLng?> = _currentLocation
-
-    init {
-        // Start collecting location updates when the ViewModel is created
-        viewModelScope.launch {
-            locationRepository.getCurrentLocation().collect { location ->
-                _currentLocation.value = location
-            }
-        }
-    }
 
     init {
         generateHeader()
@@ -63,66 +66,90 @@ class AIRecommendationModel @Inject constructor(
     }
 
     private fun generateHeader() {
-        val calendar = Calendar.getInstance() // uses local time zone
-        val hour = calendar.get(Calendar.HOUR_OF_DAY) // 0 - 23
+        val calendar = Calendar.getInstance()
+        val hour = calendar.get(Calendar.HOUR_OF_DAY)
         headerText = when (hour) {
             in 5..11 -> "Good morning, "
             in 12..16 -> "Good afternoon, "
             else -> "Good evening, "
         }
-        headerText += Firebase.auth.currentUser?.email?.split(".")?.get(0) ?: "User"
+        headerText += Firebase.auth.currentUser?.email?.split("@")?.get(0) ?: "User"
     }
 
     private fun fetchRestaurants() {
         viewModelScope.launch {
             try {
-                _visitedRestaurants.value = restaurantDAO.getAllUserRestaurants(Firebase.auth.currentUser?.email ?: "Unknown").first()
+                _visitedRestaurants.value =
+                    restaurantDAO.getAllUserRestaurants(Firebase.auth.currentUser?.email ?: "Unknown").first()
             } catch (e: Exception) {
-                // Handle any potential errors
                 _visitedRestaurants.value = emptyList()
-                // Optionally log the error
                 Log.e("AIRecommendationModel", "Error fetching restaurants", e)
             }
         }
     }
 
     private fun recommendationPromptHeader(): String {
-        val location = _currentLocation.value
-        return "Give me $recLength restaurant recommendations for places near my current location (${location!!.latitude}, ${location.longitude}) that I have not been to and provide a 3 sentence description for each. " +
-                "Make sure the restaurants are nearby, and base it off the following format: \n\n" +
-                "you recommend are in the city that the most recent places I have been are in. Here is an example of the format: " +
-                "\nArany Kaviár - District I, Budapest: This Michelin-starred restaurant is known for its contemporary hungarian " +
-                "cuisine and innovative dishes. Luxurious but expensive, Arany Kaviár would be perfect for a special occasion." +
-                "\n\n" +
-                "Do not include any bold text! Here are some of the restaurants I have been to and my reviews of them:\n\n"
+        val location = _currentLocation.value ?: return "Please wait for location data..."
+
+        return """
+            I need exactly $recLength restaurant recommendations in JSON array format.
+            Here's the format I need for each item:
+            
+            [
+              {
+                "name": "Restaurant Name",
+                "location": "City, State/Country",
+                "summary": "A brief 2-3 sentence summary about the restaurant."
+              }
+            ]
+            
+            Please give me $recLength restaurant recommendations for places near my current location 
+            (${location.latitude}, ${location.longitude}). 
+            
+            Here are some of the restaurants I have been to and my reviews of them:
+            
+        """.trimIndent()
     }
+
     private fun reviewsPromptHeader(): String {
-        return "Write a short $recLength paragraph summary of my the reviews of the restaurants I have been to. This " +
-                "is an example of what I am looking for: Mazel Tov and David's Kitchen received exceptional " +
-                "ratings, with high scores for food, vibes, and staff, earning an impressive 9.3 rating overall. " +
-                "Reviewers praised the excellent cuisine and stunning interior of Mazel Tov, while David's Kitchen " +
-                "was lauded for its delectable pastries and cozy atmosphere.\n" +
-                "Hari Kebab, while still scoring highly for food, fell slightly short in the vibes and staff categories, " +
-                "resulting in a lower overall rating of 7. Despite this, reviewers acknowledged the establishment as serving " +
-                "the best kebabs in Budapest." +
-                "\n\nDo not include any bold text! These are my reviews:\n\n"
+        return """
+            Write a short $recLength paragraph summary of the reviews of the restaurants I have been to. 
+            Format your response as a JSON array like this:
+            
+            [
+              {
+                "name": "Summary",
+                "location": "",
+                "summary": "Your summary paragraph here"
+              }
+            ]
+            
+            Here are my reviews:
+            
+        """.trimIndent()
     }
+
     private fun nearbyPromptHeader(): String {
-        val location = _currentLocation.value
-        return "Give me $recLength restaurant recommendations for places near my current location (${location!!.latitude}, ${location.longitude}) that I have not been to and provide a 3 sentence description for each. " +
-                "Make sure the restaurants are nearby, and base it off the following format: \n\n" +
-                "1. **Tranzit Etterem** - This cozy and relaxed restaurant offers a blend of Hungarian " +
-                "and international cuisine, with a focus on fresh, seasonal ingredients. The menu changes " +
-                "regularly, but you can expect to find dishes like roasted duck breast with plum sauce or " +
-                "grilled salmon with saffron risotto.\n\n" +
-                "2. **Bestia** - This trendy and vibrant spot serves up modern Italian dishes with a twist. " +
-                "The open kitchen allows you to watch the chefs in action as they prepare mouthwatering " +
-                "creations like homemade pasta with wild boar ragu or sea bass with roasted vegetables." +
-                "\n\nDo not include any bold text! Make sure none of the following places are included: \n"
+        val location = _currentLocation.value ?: return "Please wait for location data..."
 
+        return """
+            Give me $recLength restaurant recommendations for places near my current location 
+            (${location.latitude}, ${location.longitude}) that I have not been to.
+            
+            Format your response as a JSON array like this:
+            
+            [
+              {
+                "name": "Restaurant Name", 
+                "location": "City, State/Country", 
+                "summary": "A brief description of what makes this place special."
+              }
+            ]
+            
+            Do not include any of the following places:
+            
+        """.trimIndent()
     }
-
-
 
     private val generativeModel = GenerativeModel(
         modelName = "gemini-2.0-pro-exp-02-05",
@@ -130,54 +157,96 @@ class AIRecommendationModel @Inject constructor(
     )
 
     fun getAIRecommendation(promptType: String) {
-        val prompt: String
-        if (promptType == "Recommendation") {
-            headerText = "Restaurant recommendation"
-            prompt = buildRecommendationPrompt()
-        } else if (promptType == "Reviews") {
-            headerText = "Review Summary"
-            prompt = buildReviewsPrompt()
-        } else {
-            headerText = "Best Nearby"
-            prompt = buildBestNearbyPrompt()
+        val promptBuilder = when (promptType) {
+            "Recommendation" -> {
+                headerText = "Restaurant recommendation"
+                ::buildRecommendationPrompt
+            }
+            "Reviews" -> {
+                headerText = "Review Summary"
+                ::buildReviewsPrompt
+            }
+            else -> {
+                headerText = "Best Nearby"
+                ::buildBestNearbyPrompt
+            }
         }
+
         _textGenerationResult.value = "Generating..."
+        _parsedRecommendations.value = emptyList()
+
+        val prompt = promptBuilder()
+        if (prompt.startsWith("Please wait")) {
+            _textGenerationResult.value = prompt
+            return
+        }
+
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val result = generativeModel.generateContent(prompt)
-                val generatedText = result.text
-                _textGenerationResult.value = generatedText
+                val rawResponse = result.text ?: ""
+
+                _textGenerationResult.value = rawResponse
+
+                // Try to parse the JSON array directly
+                parseRecommendationsFromText(rawResponse)
+
             } catch (e: Exception) {
-                _textGenerationResult.value = "Error:  ${e.message}"
+                Log.e("AIRecommendationModel", "AI generation failed", e)
+                _textGenerationResult.value = "Error: ${e.message}"
+                _parsedRecommendations.value = emptyList()
             }
+        }
+    }
+
+    private fun parseRecommendationsFromText(text: String) {
+        try {
+            // Extract JSON from the text, handling various markdown or text formats
+            val jsonPattern = """\[[\s\S]*?\]""".toRegex()
+            val jsonMatch = jsonPattern.find(text)
+
+            if (jsonMatch != null) {
+                val jsonString = jsonMatch.value
+
+                val gson = Gson()
+                val type = object : TypeToken<List<AIRecommendation>>() {}.type
+
+                try {
+                    val recommendations: List<AIRecommendation> = gson.fromJson(jsonString, type)
+                    _parsedRecommendations.value = recommendations
+                } catch (e: JsonSyntaxException) {
+                    Log.e("AIRecommendationModel", "JSON parsing failed: ${e.message}", e)
+                    // Try handling recommendations as a simple text response
+                    _parsedRecommendations.value = listOf(AIRecommendation("AI Response", "", text))
+                }
+            } else {
+                // Fallback if no JSON found
+                _parsedRecommendations.value = listOf(AIRecommendation("AI Response", "", text))
+            }
+        } catch (e: Exception) {
+            Log.e("AIRecommendationModel", "Parsing failed", e)
+            _parsedRecommendations.value = listOf(AIRecommendation("Error", "", "Could not parse response"))
         }
     }
 
     private fun buildRecommendationPrompt(): String {
         return buildString {
             append(recommendationPromptHeader())
-            _visitedRestaurants.value.forEach { review ->
-                append(review)
-            }
+            _visitedRestaurants.value.forEach { append(it.toString()) }
         }
     }
 
     private fun buildReviewsPrompt(): String {
         return buildString {
             append(reviewsPromptHeader())
-            _visitedRestaurants.value.forEach { review ->
-                append(review)
-            }
+            _visitedRestaurants.value.forEach { append(it.toString()) }
         }
     }
 
     private fun buildBestNearbyPrompt(): String {
         return buildString {
             append(nearbyPromptHeader())
-            _visitedRestaurants.value.forEach { review ->
-                append(review)
-            }
+            _visitedRestaurants.value.forEach { append(it.toString()) }
         }
     }
-
 }
