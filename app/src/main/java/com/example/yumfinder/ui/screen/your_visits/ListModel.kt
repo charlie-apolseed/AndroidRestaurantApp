@@ -24,9 +24,9 @@ class ListModel @Inject constructor(
         showFilterDialog = !showFilterDialog
     }
 
-    fun getAllUserRestaurants(reviewer: String) = restaurantDAO.getAllUserRestaurants(reviewer)
+    fun getAllUserRestaurants(reviewer: String) = restaurantDAO.getUserReviews(reviewer)
 
-    fun getAllRestaurants() = restaurantDAO.getAllRestaurants()
+    fun getAllRestaurants() = restaurantDAO.getAllReviews()
 
 
 

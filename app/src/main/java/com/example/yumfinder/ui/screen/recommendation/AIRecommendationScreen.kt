@@ -189,7 +189,16 @@ fun AIRecommendationScreen(
                                     fontSize = 18.sp,
                                 )
                             }
-                        } else {
+                        } else if (viewmodel.headerText == "Review Summary") {
+                            Text(
+                                text = parsedRecommendations[0].summary,
+                                modifier = Modifier
+                                    .padding(vertical = 16.dp, horizontal = 8.dp)
+                                    .fillMaxWidth(),
+                                fontSize = 18.sp,
+                            )
+                        }
+                        else {
                             Text(
                                 text = generatedText,
                                 modifier = Modifier
@@ -240,7 +249,7 @@ fun AIRecommendationScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top
             ) {
-                if (viewmodel.headerText == "Restaurant Recommendation") {
+                if (viewmodel.headerText == "Personal Recommendation") {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -514,7 +523,7 @@ fun AIRecommendationScreen(
                     }
                 }
 
-                if (viewmodel.headerText == "Best Nearby") {
+                if (viewmodel.headerText == "Popular with Friends") {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -535,7 +544,7 @@ fun AIRecommendationScreen(
                             elevation = ButtonDefaults.buttonElevation(defaultElevation = 5.dp),
                             onClick = {
                                 viewmodel.recLength--
-                                viewmodel.getAIRecommendation("Best Nearby")
+                                viewmodel.getAIRecommendation("Popular with Friends")
                             }
                         ) {
                             Row(
@@ -565,7 +574,7 @@ fun AIRecommendationScreen(
                             shape = RoundedCornerShape(8.dp),
                             elevation = ButtonDefaults.buttonElevation(defaultElevation = 5.dp),
                             onClick = {
-                                viewmodel.getAIRecommendation("Best Nearby")
+                                viewmodel.getAIRecommendation("Popular with Friends")
                             }
                         ) {
                             Row(
@@ -596,7 +605,7 @@ fun AIRecommendationScreen(
                             elevation = ButtonDefaults.buttonElevation(defaultElevation = 5.dp),
                             onClick = {
                                 viewmodel.recLength++
-                                viewmodel.getAIRecommendation("Best Nearby")
+                                viewmodel.getAIRecommendation("Popular with Friends")
                             }
                         ) {
                             Row(
@@ -629,7 +638,7 @@ fun AIRecommendationScreen(
                         elevation = ButtonDefaults.buttonElevation(defaultElevation = 5.dp),
                         onClick = {
                             viewmodel.recLength = 3
-                            viewmodel.getAIRecommendation("Best Nearby")
+                            viewmodel.getAIRecommendation("Popular with Friends")
                         }
                     ) {
                         Row(
@@ -643,7 +652,7 @@ fun AIRecommendationScreen(
                             )
                             Image(
                                 painter = painterResource(id = R.drawable.nearby),
-                                contentDescription = "Nearby",
+                                contentDescription = "Popular with Friends",
                                 modifier = Modifier.size(25.dp)
                             )
                         }

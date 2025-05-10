@@ -38,7 +38,8 @@ class AIRecommendationModel @Inject constructor(
     private val restaurantDAO: RestaurantDAO
 ) : ViewModel() {
 
-    private val _visitedRestaurants = MutableStateFlow<List<RestaurantItem>>(emptyList())
+    private val _userReviews = MutableStateFlow<List<RestaurantItem>>(emptyList())
+    private val _nonUserReviews = MutableStateFlow<List<RestaurantItem>>(emptyList())
 
     private val _textGenerationResult = MutableStateFlow<String?>(null)
     val textGenerationResult: StateFlow<String?> = _textGenerationResult.asStateFlow()
@@ -48,16 +49,17 @@ class AIRecommendationModel @Inject constructor(
 
     var recLength by mutableStateOf(3)
     var headerText by mutableStateOf("Good morning, User")
-    var button1Text by mutableStateOf("AI recommendations")
-    var button2Text by mutableStateOf("Summarize my reviews")
-    var button3Text by mutableStateOf("Best places near me")
+    var button1Text by mutableStateOf("Personal Recommendation")
+    var button2Text by mutableStateOf("Review Summary")
+    var button3Text by mutableStateOf("Popular With Friends")
 
     private val _currentLocation = MutableStateFlow<LatLng?>(null)
     val currentLocation: StateFlow<LatLng?> = _currentLocation
 
     init {
         generateHeader()
-        fetchRestaurants()
+        fetchUserReviews()
+        fetchNonUserReviews()
         viewModelScope.launch {
             locationRepository.getCurrentLocation().collect { location ->
                 _currentLocation.value = location
@@ -76,14 +78,26 @@ class AIRecommendationModel @Inject constructor(
         headerText += Firebase.auth.currentUser?.email?.split("@")?.get(0) ?: "User"
     }
 
-    private fun fetchRestaurants() {
+    private fun fetchUserReviews() {
         viewModelScope.launch {
             try {
-                _visitedRestaurants.value =
-                    restaurantDAO.getAllUserRestaurants(Firebase.auth.currentUser?.email ?: "Unknown").first()
+                _userReviews.value =
+                    restaurantDAO.getUserReviews(Firebase.auth.currentUser?.email ?: "Unknown").first()
             } catch (e: Exception) {
-                _visitedRestaurants.value = emptyList()
+                _userReviews.value = emptyList()
                 Log.e("AIRecommendationModel", "Error fetching restaurants", e)
+            }
+        }
+    }
+
+    private fun fetchNonUserReviews() {
+        viewModelScope.launch {
+            try {
+                _nonUserReviews.value =
+                    restaurantDAO.getReviewsExcludingUser(Firebase.auth.currentUser?.email ?: "Unknown").first()
+            } catch (e: Exception) {
+                _nonUserReviews.value = emptyList()
+                Log.e("AIRecommendationModel", "Error fetching all reviews", e)
             }
         }
     }
@@ -113,40 +127,24 @@ class AIRecommendationModel @Inject constructor(
 
     private fun reviewsPromptHeader(): String {
         return """
-            Write a short $recLength paragraph summary of the reviews of the restaurants I have been to. 
-            Format your response as a JSON array like this:
+            Write $recLength paragraphs summarizing all of the the restaurants I have been to. Do not
+            give me any text other than your summary of the reviews.
             
-            [
-              {
-                "name": "Summary",
-                "location": "",
-                "summary": "Your summary paragraph here"
-              }
-            ]
+      
             
             Here are my reviews:
             
         """.trimIndent()
     }
 
-    private fun nearbyPromptHeader(): String {
-        val location = _currentLocation.value ?: return "Please wait for location data..."
-
+    private fun friendsHeader(): String {
         return """
-            Give me $recLength restaurant recommendations for places near my current location 
-            (${location.latitude}, ${location.longitude}) that I have not been to.
+            Write $recLength paragraphs summarizing all of the the restaurants I have been to. Do not
+            give me any text other than your summary of the reviews.
             
-            Format your response as a JSON array like this:
+      
             
-            [
-              {
-                "name": "Restaurant Name", 
-                "location": "City, State/Country", 
-                "summary": "A brief description of what makes this place special."
-              }
-            ]
-            
-            Do not include any of the following places:
+            Here are my friends' reviews:
             
         """.trimIndent()
     }
@@ -156,10 +154,15 @@ class AIRecommendationModel @Inject constructor(
         apiKey = "AIzaSyCPa_DY0AqC1ilZJiL2mr845kleSSiZbLI"
     )
 
+    private val fastGenerativeModel = GenerativeModel(
+        modelName = "gemini-2.0-flash-lite-001",
+        apiKey = "AIzaSyCPa_DY0AqC1ilZJiL2mr845kleSSiZbLI"
+    )
+
     fun getAIRecommendation(promptType: String) {
         val promptBuilder = when (promptType) {
             "Recommendation" -> {
-                headerText = "Restaurant Recommendation"
+                headerText = "Personal Recommendation"
                 ::buildRecommendationPrompt
             }
             "Reviews" -> {
@@ -167,8 +170,8 @@ class AIRecommendationModel @Inject constructor(
                 ::buildReviewsPrompt
             }
             else -> {
-                headerText = "Best Nearby"
-                ::buildBestNearbyPrompt
+                headerText = "Popular with Friends"
+                ::buildFriendPrompt
             }
         }
 
@@ -181,20 +184,42 @@ class AIRecommendationModel @Inject constructor(
             return
         }
 
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val result = generativeModel.generateContent(prompt)
-                val rawResponse = result.text ?: ""
+        Log.d("AIRecommendationModel", "Prompt: $prompt")
 
-                _textGenerationResult.value = rawResponse
-                Log.d("AIRecommendationModel", "Raw response: $rawResponse")
-                // Try to parse the JSON array directly
-                parseRecommendationsFromText(rawResponse)
 
-            } catch (e: Exception) {
-                Log.e("AIRecommendationModel", "AI generation failed", e)
-                _textGenerationResult.value = "Error: ${e.message}"
-                _parsedRecommendations.value = emptyList()
+        if (promptType == "Recommendation") {
+            viewModelScope.launch(Dispatchers.IO) {
+                try {
+                    val result = generativeModel.generateContent(prompt)
+                    val rawResponse = result.text ?: ""
+
+                    _textGenerationResult.value = rawResponse
+                    Log.d("AIRecommendationModel", "Raw response: $rawResponse")
+                    // Try to parse the JSON array directly
+                    parseRecommendationsFromText(rawResponse)
+
+                } catch (e: Exception) {
+                    Log.e("AIRecommendationModel", "AI generation failed", e)
+                    _textGenerationResult.value = "Error: ${e.message}"
+                    _parsedRecommendations.value = emptyList()
+                }
+            }
+        } else {
+            viewModelScope.launch(Dispatchers.IO) {
+                try {
+                    val result = fastGenerativeModel.generateContent(prompt)
+                    val rawResponse = result.text ?: ""
+
+                    _textGenerationResult.value = rawResponse
+                    Log.d("AIRecommendationModel", "Raw response: $rawResponse")
+                    // Try to parse the JSON array directly
+                    parseRecommendationsFromText(rawResponse)
+
+                } catch (e: Exception) {
+                    Log.e("AIRecommendationModel", "AI generation failed", e)
+                    _textGenerationResult.value = "Error: ${e.message}"
+                    _parsedRecommendations.value = emptyList()
+                }
             }
         }
     }
@@ -233,21 +258,21 @@ class AIRecommendationModel @Inject constructor(
     private fun buildRecommendationPrompt(): String {
         return buildString {
             append(recommendationPromptHeader())
-            _visitedRestaurants.value.forEach { append(it.toString()) }
+            _userReviews.value.forEach { append(it.toString()) }
         }
     }
 
     private fun buildReviewsPrompt(): String {
         return buildString {
             append(reviewsPromptHeader())
-            _visitedRestaurants.value.forEach { append(it.toString()) }
+            _userReviews.value.forEach { append(it.toString()) }
         }
     }
 
-    private fun buildBestNearbyPrompt(): String {
+    private fun buildFriendPrompt(): String {
         return buildString {
-            append(nearbyPromptHeader())
-            _visitedRestaurants.value.forEach { append(it.toString()) }
+            append(friendsHeader())
+            _nonUserReviews.value.forEach { append(it.toString()) }
         }
     }
 }

@@ -1,7 +1,5 @@
 package com.example.yumfinder.ui.screen.home
 
-import android.util.Log
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import com.example.yumfinder.data.RestaurantDAO
 import com.google.android.gms.maps.model.BitmapDescriptor
@@ -17,7 +15,7 @@ import java.util.concurrent.TimeUnit
 class HomeScreenModel @Inject constructor(
     val restaurantDAO: RestaurantDAO
 ) : ViewModel() {
-    fun getAllRestaurants() = restaurantDAO.getAllRestaurants()
+    fun getAllRestaurants() = restaurantDAO.getAllReviews()
 
     fun getTimeElapsed(uploadDate: String): String {
         val dateFormat = SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.ENGLISH)

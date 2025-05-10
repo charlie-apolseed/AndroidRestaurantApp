@@ -13,13 +13,16 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface RestaurantDAO {
     @Query("SELECT * FROM restaurant_table ORDER BY visited_date")
-    fun getAllRestaurants() : Flow<List<RestaurantItem>>
+    fun getAllReviews() : Flow<List<RestaurantItem>>
 
     @Query("SELECT * FROM restaurant_table ORDER BY visited_date DESC LIMIT 1")
     fun getMostRecentRestaurant(): RestaurantItem
 
     @Query("SELECT * FROM restaurant_table WHERE restaurant_reviewer = :reviewer ORDER BY visited_date DESC")
-    fun getAllUserRestaurants(reviewer: String) : Flow<List<RestaurantItem>>
+    fun getUserReviews(reviewer: String) : Flow<List<RestaurantItem>>
+
+    @Query("SELECT * FROM restaurant_table WHERE restaurant_reviewer != :reviewer ORDER BY visited_date DESC")
+    fun getReviewsExcludingUser(reviewer: String): Flow<List<RestaurantItem>>
 
     @Query("SELECT * from restaurant_table WHERE id = :id")
     suspend fun getRestaurantById(id: Int): RestaurantItem
